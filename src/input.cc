@@ -1,6 +1,6 @@
 #include "input.h"
 
-#include <cmath>
+#include <cmath>  // std::sqrt
 #include <iostream>
 #include "constant.h"
 
@@ -12,7 +12,10 @@ LorentzVector toLorentzVector(const Vector3 &v3, double mass) {
 
 Input mkInputCM(const Vector3 &k_sig_v3, const Vector3 &mu_sig_v3) {
     LorentzVector k_sig = toLorentzVector(k_sig_v3, MK);
+    k_sig = boostToCM()(k_sig);
+
     LorentzVector mu_sig = toLorentzVector(mu_sig_v3, MMU);
+    mu_sig = boostToCM()(mu_sig);
 
     return {k_sig, mu_sig};
 }
