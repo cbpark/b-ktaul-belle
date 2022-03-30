@@ -3,7 +3,10 @@ CXXFLAGS := -g -O2 -Wall -Wextra -std=c++17 -pedantic -I$(SRCDIR) $(CXXFLAGS)
 LIBS     := -lm
 RM       := rm -f
 
-EXE := bin/mtau
+EXE      := bin/mtau
+
+LIBSRC   := $(wildcard $(SRCDIR)/*.cc)
+LIBOBJ   := $(LIBSRC:.cc=.o)
 
 # NLopt (https://nlopt.readthedocs.io/)
 NLOPT ?= /usr
@@ -17,7 +20,7 @@ LIBS     += $(shell root-config --libs)
 
 all: $(EXE)
 
-bin/%: bin/%.o
+bin/%: bin/%.o $(LIBOBJ)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean::
