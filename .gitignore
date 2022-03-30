@@ -1,0 +1,6 @@
+.#*
+*~
+*.o
+*cache*
+*.root
+bin/mtau
