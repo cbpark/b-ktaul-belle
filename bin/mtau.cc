@@ -16,7 +16,16 @@ const double PZTOT = 0.0;
 const double EPSILON = 1.0e-10;
 const unsigned int NEVAL = 1000;
 
-int main(int, char *argv[]) {
+int main(int argc, char *argv[]) {
+    if (!(argc == 3)) {
+        std::cerr
+            << "usage: ./bin/mtau <event.root> <output.root>\n"
+            << "  <event.root>: input root file (required).\n"
+            << "  <output.root>: output file to store the result (required).\n";
+        return 1;
+    }
+
+    // the input root file.
     TFile infile{argv[1]};
     cout << "-- Input file: " << infile.GetName() << '\n';
 
@@ -64,11 +73,14 @@ int main(int, char *argv[]) {
     // the event variables to calculate.
     Double_t mtau_random;
     Double_t m2s, mtau_m2s;
+    Double_t m2sb, mtau_m2sb;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
     output->Branch("mtau_random", &mtau_random, "mtau_random/D");
     output->Branch("m2s", &m2s, "m2s/D");
     output->Branch("mtau_m2s", &mtau_m2s, "mtau_m2s/D");
+    output->Branch("m2sb", &m2sb, "m2sb/D");
+    output->Branch("mtau_m2sb", &mtau_m2sb, "mtau_m2sb/D");
 
     // the random number generator for mtau_random.
     auto rnd = std::make_shared<TRandom3>();
@@ -76,12 +88,13 @@ int main(int, char *argv[]) {
 
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
+    auto n_fail = 0;
 #ifndef DEBUG
     // --------------------------------------------------------------------------
     // event loop
     for (auto iev = 0; iev != nentries; ++iev) {
 #else
-    for (auto iev = 0; iev != 1; ++iev) {
+    for (auto iev = 0; iev != 3; ++iev) {
 #endif
         event->GetEntry(iev);
         // event->Show(iev);
@@ -111,6 +124,12 @@ int main(int, char *argv[]) {
         auto m2s_sol = yam2::m2Cons(input_kinematics, EPSILON, NEVAL);
         auto m2s_rec = analysis::mkM2Reconstruction(input, m2s_sol);
         std::tie(m2s, mtau_m2s) = m2s_rec.get_result();
+
+        // reconstruction using M2sB.
+        auto m2sb_sol = yam2::m2CCons(input_kinematics, EPSILON, NEVAL);
+        auto m2sb_rec = analysis::mkM2Reconstruction(input, m2sb_sol);
+        std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
+        if (m2sb < 0.0) { ++n_fail; }
 
         // fill the event variables.
         output->Fill();
