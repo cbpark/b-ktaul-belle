@@ -2,8 +2,8 @@
 #include <TFile.h>
 #include <TRandom3.h>
 #include <TTree.h>
-#include <memory>
 #include <iostream>
+#include <memory>
 #include "input.h"
 #include "variable.h"
 
@@ -11,19 +11,19 @@ using std::cout;
 
 int main(int, char *argv[]) {
     TFile infile{argv[1]};
-    cout << "Input file: " << infile.GetName() << '\n';
+    cout << "-- Input file: " << infile.GetName() << '\n';
 
     // check the trees in the input file.
     auto keys = infile.GetListOfKeys();
     if (keys->GetSize() < 1) {
-        std::cerr << "The input file contains no tree.\n";
+        std::cerr << "-- The input file contains no tree.\n";
         infile.Close();
         return 1;
     }
 
     // get the tree.
     auto treename = infile.GetListOfKeys()->At(0)->GetName();
-    cout << "The name of the input tree: " << treename << '\n';
+    cout << "-- The name of the input tree: " << treename << '\n';
 
     auto event = infile.Get<TTree>(treename);
     // event->Print();
@@ -50,10 +50,16 @@ int main(int, char *argv[]) {
     event->SetBranchAddress("py_mut", &py_mut);
     event->SetBranchAddress("pz_mut", &pz_mut);
 
+    Double_t m_tau_random;
+
+    auto output = std::make_shared<TTree>("var", "collider variables");
+    output->Branch("m_tau_random", &m_tau_random, "m_tau_random/D");
+
     auto rnd = std::make_shared<TRandom3>();
     rnd->SetSeed(42);
 
-    for (auto iev = 0; iev != 1; ++iev) {
+    const auto nentries = event->GetEntries();
+    for (auto iev = 0; iev != nentries; ++iev) {
         event->GetEntry(iev);
         // event->Show(iev);
 
@@ -62,19 +68,31 @@ int main(int, char *argv[]) {
             {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
             {px_mut, py_mut, pz_mut});
 
-        cout << "k_sig: " << input.k_sig()
-             << ", mass = " << input.k_sig().mass() << '\n';
-        cout << "mu_sig: " << input.mu_sig()
-             << ", mass = " << input.mu_sig().mass() << '\n';
-        cout << "htau_sig: " << input.htau_sig()
-             << ", mass = " << input.htau_sig().mass() << '\n';
-        cout << "d_tag: " << input.d_tag()
-             << ", mass = " << input.d_tag().mass() << '\n';
-        cout << "mu_tag: " << input.mu_tag()
-             << ", mass = " << input.mu_tag().mass() << '\n';
-        cout << "ptmiss: " << input.ptmiss() << '\n';
+        // cout << "k_sig: " << input.k_sig()
+        //      << ", mass = " << input.k_sig().mass() << '\n';
+        // cout << "mu_sig: " << input.mu_sig()
+        //      << ", mass = " << input.mu_sig().mass() << '\n';
+        // cout << "htau_sig: " << input.htau_sig()
+        //      << ", mass = " << input.htau_sig().mass() << '\n';
+        // cout << "d_tag: " << input.d_tag()
+        //      << ", mass = " << input.d_tag().mass() << '\n';
+        // cout << "mu_tag: " << input.mu_tag()
+        //      << ", mass = " << input.mu_tag().mass() << '\n';
+        // cout << "ptmiss: " << input.ptmiss() << '\n';
 
-        double m_tau_random = analysis::mRecoilRandom(input, rnd);
-        cout << "m_tau_random: " << m_tau_random << '\n';
+        m_tau_random = analysis::mRecoilRandom(input, rnd);
+        // cout << "m_tau_random: " << m_tau_random << '\n';
+
+        output->Fill();
     }
+
+    infile.Close();
+    cout << "-- Processed " << nentries << " events.\n";
+
+    output->Print();
+
+    TFile outfile{argv[2], "recreate"};
+    cout << "-- The result has been stored in " << outfile.GetName() << '\n';
+    output->Write();
+    outfile.Close();
 }
