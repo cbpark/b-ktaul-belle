@@ -9,6 +9,10 @@ constexpr double MK = 0.4937;
 
 constexpr double MMU = 0.105;
 
+constexpr double MPI = 0.13957;
+
+constexpr double MD = 1.864;
+
 constexpr double EEM = 8.0;
 constexpr double EEP = 3.5;
 constexpr double EBEAMS = EEM + EEP;
