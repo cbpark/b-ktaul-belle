@@ -4,6 +4,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
+#include <YAM2/yam2.h>
 
 using LorentzVector = ROOT::Math::XYZTVector;
 using Vector3 = ROOT::Math::XYZVectorF;
@@ -46,6 +47,12 @@ public:
     LorentzVector d_tag() const { return d_tag_; }
     LorentzVector mu_tag() const { return mu_tag_; }
     Vector2 ptmiss() const { return ptmiss_; }
+
+    LorentzVector vis_sig() const { return k_sig_ + mu_sig_ + htau_sig_; }
+    LorentzVector vis_tag() const { return d_tag_ + mu_tag_; }
+
+    std::optional<yam2::InputKinematics> to_input_kinematics(
+        double m_invisible, double pz_tot) const;
 
     friend Input mkInputCM(const Vector3 &k_sig_v3, const Vector3 &mu_sig_v3,
                            const Vector3 &htau_sig_v3, const Vector3 &d_tag_v3,

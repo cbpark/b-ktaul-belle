@@ -10,7 +10,7 @@ LIBOBJ   := $(LIBSRC:.cc=.o)
 
 # YAM2 (https://github.com/cbpark/YAM2)
 YAM2     ?= /usr
-CXXFLAGS += -I$(YAM2)/include/YAM2
+CXXFLAGS += -I$(YAM2)/include
 LIBS     += -L$(YAM2)/lib -lYAM2 -Wl,-rpath $(YAM2)/lib
 
 # NLopt (https://nlopt.readthedocs.io/)

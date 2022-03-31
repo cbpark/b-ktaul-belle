@@ -9,6 +9,12 @@
 
 using std::cout;
 
+const double MINVISIBLE = 0.0;
+const double PZTOT = 0.0;
+
+const double EPSILON = 1.0e-10;
+const unsigned int NEVAL = 1000;
+
 int main(int, char *argv[]) {
     TFile infile{argv[1]};
     cout << "-- Input file: " << infile.GetName() << '\n';
@@ -54,15 +60,18 @@ int main(int, char *argv[]) {
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
 
     Double_t m_tau_random;
+    Double_t m2s;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
     output->Branch("m_tau_random", &m_tau_random, "m_tau_random/D");
+    output->Branch("m2s", &m2s, "m2s/D");
 
     auto rnd = std::make_shared<TRandom3>();
     rnd->SetSeed(42);
 
     const auto nentries = event->GetEntries();
     for (auto iev = 0; iev != nentries; ++iev) {
+    // for (auto iev = 0; iev != 1; ++iev) {
         event->GetEntry(iev);
         // event->Show(iev);
 
@@ -71,20 +80,17 @@ int main(int, char *argv[]) {
             {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
             {px_mut, py_mut, pz_mut});
 
-        // cout << "k_sig: " << input.k_sig()
-        //      << ", mass = " << input.k_sig().mass() << '\n';
-        // cout << "mu_sig: " << input.mu_sig()
-        //      << ", mass = " << input.mu_sig().mass() << '\n';
-        // cout << "htau_sig: " << input.htau_sig()
-        //      << ", mass = " << input.htau_sig().mass() << '\n';
-        // cout << "d_tag: " << input.d_tag()
-        //      << ", mass = " << input.d_tag().mass() << '\n';
-        // cout << "mu_tag: " << input.mu_tag()
-        //      << ", mass = " << input.mu_tag().mass() << '\n';
-        // cout << "ptmiss: " << input.ptmiss() << '\n';
-
         m_tau_random = analysis::mRecoilRandom(input, rnd);
-        // cout << "m_tau_random: " << m_tau_random << '\n';
+
+        auto input_kinematics =
+            input.to_input_kinematics(MINVISIBLE, PZTOT);
+        // cout << input_kinematics.value() << '\n';
+        auto m2s_sol = yam2::m2Cons(input_kinematics, EPSILON, NEVAL);
+        if (!m2s_sol) {
+            m2s = -1.0;
+        } else {
+            m2s = m2s_sol.value().m2();
+        }
 
         output->Fill();
     }

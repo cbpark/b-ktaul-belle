@@ -1,10 +1,10 @@
 #include "variable.h"
 
 #include <TRandom3.h>
+#include <cmath>  // std::sqrt
 #include <memory>
-#include <cmath> // std::sqrt
-#include "input.h"
 #include "constant.h"
+#include "input.h"
 
 namespace analysis {
 double mRecoilRandom(const Input &input, std::shared_ptr<TRandom3> rnd) {
@@ -19,7 +19,12 @@ double mRecoilRandom(const Input &input, std::shared_ptr<TRandom3> rnd) {
 
     double cos_theta = rnd->Uniform(-1.0, 1.0);
 
-    double m_tau_sq = m_b_sq + m_kl_sq - 2.0 * (e_b * e_kl + p_b * p_kl * cos_theta);
+    double m_tau_sq =
+        m_b_sq + m_kl_sq - 2.0 * (e_b * e_kl + p_b * p_kl * cos_theta);
     return m_tau_sq < 0.0 ? -1.0 : std::sqrt(m_tau_sq);
+}
+
+double mTauM2s(const Input &input) {
+    return 0.0;
 }
 }  // namespace analysis
