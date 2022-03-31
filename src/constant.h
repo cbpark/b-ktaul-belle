@@ -26,6 +26,8 @@ inline auto boostToCM() {
     ROOT::Math::XYZTVector sqrt_s{0.0, 0.0, PLONG, EBEAMS};
     return ROOT::Math::Boost(sqrt_s.BoostToCM());
 }
+
+inline auto CM() { return ROOT::Math::XYZTVector(0.0, 0.0, 0.0, SQRTS); }
 }  // namespace analysis
 
 #endif  // B_KTAUL_BELLE_SRC_CONSTANT_H_

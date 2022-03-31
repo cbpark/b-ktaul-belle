@@ -51,6 +51,8 @@ public:
     LorentzVector vis_sig() const { return k_sig_ + mu_sig_ + htau_sig_; }
     LorentzVector vis_tag() const { return d_tag_ + mu_tag_; }
 
+    LorentzVector kl_sig() const { return k_sig_ + mu_sig_; }
+
     std::optional<yam2::InputKinematics> to_input_kinematics(
         double m_invisible, double pz_tot) const;
 

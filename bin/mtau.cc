@@ -3,7 +3,8 @@
 #include <TRandom3.h>
 #include <TTree.h>
 #include <iostream>
-#include <memory>
+#include <memory>  // std::shared_ptr
+#include <tuple>   // std::tie
 #include "input.h"
 #include "variable.h"
 
@@ -34,6 +35,7 @@ int main(int, char *argv[]) {
     auto event = infile.Get<TTree>(treename);
     // event->Print();
 
+    // the particle momenta from the input.
     Float_t px_ks, py_ks, pz_ks;
     Float_t px_mus, py_mus, pz_mus;
     Float_t px_htaus, py_htaus, pz_htaus;
@@ -59,19 +61,25 @@ int main(int, char *argv[]) {
     TFile outfile{argv[2], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
 
-    Double_t m_tau_random;
-    Double_t m2s;
+    // the event variables to calculate.
+    Double_t mtau_random;
+    Double_t m2s, mtau_m2s;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
-    output->Branch("m_tau_random", &m_tau_random, "m_tau_random/D");
+    output->Branch("mtau_random", &mtau_random, "mtau_random/D");
     output->Branch("m2s", &m2s, "m2s/D");
+    output->Branch("mtau_m2s", &mtau_m2s, "mtau_m2s/D");
 
+    // the random number generator for mtau_random.
     auto rnd = std::make_shared<TRandom3>();
     rnd->SetSeed(42);
 
     const auto nentries = event->GetEntries();
+    cout << "-- Total number of events: " << nentries << '\n';
+    // --------------------------------------------------------------------------
+    // event loop
     for (auto iev = 0; iev != nentries; ++iev) {
-    // for (auto iev = 0; iev != 1; ++iev) {
+        // for (auto iev = 0; iev != 1; ++iev) {
         event->GetEntry(iev);
         // event->Show(iev);
 
@@ -80,23 +88,30 @@ int main(int, char *argv[]) {
             {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
             {px_mut, py_mut, pz_mut});
 
-        m_tau_random = analysis::mRecoilRandom(input, rnd);
+        // mtau using random cos(theta).
+        mtau_random = analysis::mRecoilRandom(input, rnd);
 
-        auto input_kinematics =
-            input.to_input_kinematics(MINVISIBLE, PZTOT);
-        // cout << input_kinematics.value() << '\n';
+        // the input for calculating M2 variables (no vertex info).
+        auto input_kinematics = input.to_input_kinematics(MINVISIBLE, PZTOT);
+
+        // reconstruction using M2s.
         auto m2s_sol = yam2::m2Cons(input_kinematics, EPSILON, NEVAL);
-        if (!m2s_sol) {
-            m2s = -1.0;
-        } else {
-            m2s = m2s_sol.value().m2();
-        }
+        auto m2s_rec = analysis::mkM2Reconstruction(input, m2s_sol);
+        std::tie(m2s, mtau_m2s) = m2s_rec.get_result();
 
+        // fill the event variables.
         output->Fill();
+
+        // counter.
+        auto nev = iev + 1;
+        if ((nev < 10000 && nev % 1000 == 0) || nev % 10000 == 0) {
+            cout << "... processed " << nev << " events.\n";
+        }
     }
+    // event loop ends.
+    // --------------------------------------------------------------------------
 
     infile.Close();
-    cout << "-- Processed " << nentries << " events.\n";
 
     output->Print();
     output->Write();
