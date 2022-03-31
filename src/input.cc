@@ -9,6 +9,7 @@ LorentzVector toLorentzVector(const Vector3 &v3, double mass) {
     double energy = std::sqrt(v3.mag2() + mass * mass);
     return {v3.x(), v3.y(), v3.z(), energy};
 }
+
 Input mkInputCM(const Vector3 &k_sig_v3, const Vector3 &mu_sig_v3,
                 const Vector3 &htau_sig_v3, const Vector3 &d_tag_v3,
                 const Vector3 &mu_tag_v3) {
