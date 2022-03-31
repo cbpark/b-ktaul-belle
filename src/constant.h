@@ -13,6 +13,8 @@ constexpr double MPI = 0.13957;
 
 constexpr double MD = 1.864;
 
+constexpr double SQRTS = 10.583;
+
 constexpr double EEM = 8.0;
 constexpr double EEP = 3.5;
 constexpr double EBEAMS = EEM + EEP;
