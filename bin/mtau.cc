@@ -50,6 +50,9 @@ int main(int, char *argv[]) {
     event->SetBranchAddress("py_mut", &py_mut);
     event->SetBranchAddress("pz_mut", &pz_mut);
 
+    TFile outfile{argv[2], "recreate"};
+    cout << "-- The result will be stored in " << outfile.GetName() << '\n';
+
     Double_t m_tau_random;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
@@ -90,9 +93,7 @@ int main(int, char *argv[]) {
     cout << "-- Processed " << nentries << " events.\n";
 
     output->Print();
-
-    TFile outfile{argv[2], "recreate"};
-    cout << "-- The result has been stored in " << outfile.GetName() << '\n';
     output->Write();
+
     outfile.Close();
 }
