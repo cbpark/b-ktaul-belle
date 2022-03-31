@@ -76,10 +76,13 @@ int main(int, char *argv[]) {
 
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
+#ifndef DEBUG
     // --------------------------------------------------------------------------
     // event loop
     for (auto iev = 0; iev != nentries; ++iev) {
-        // for (auto iev = 0; iev != 1; ++iev) {
+#else
+    for (auto iev = 0; iev != 1; ++iev) {
+#endif
         event->GetEntry(iev);
         // event->Show(iev);
 
@@ -88,11 +91,21 @@ int main(int, char *argv[]) {
             {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
             {px_mut, py_mut, pz_mut});
 
+#ifdef DEBUG
+        cout << "\nvis_sig: " << input.vis_sig() << '\n'
+             << "vis_tag: " << input.vis_tag() << '\n'
+             << "ptmiss: " << input.ptmiss() << "\n\n";
+#endif
+
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);
 
         // the input for calculating M2 variables (no vertex info).
         auto input_kinematics = input.to_input_kinematics(MINVISIBLE, PZTOT);
+
+#ifdef DEBUG
+        cout << "input kinematics:\n" << input_kinematics.value() << "\n\n";
+#endif
 
         // reconstruction using M2s.
         auto m2s_sol = yam2::m2Cons(input_kinematics, EPSILON, NEVAL);
