@@ -9,7 +9,7 @@ LIBSRC   := $(wildcard $(SRCDIR)/*.cc)
 LIBOBJ   := $(LIBSRC:.cc=.o)
 
 # YAM2 (https://github.com/cbpark/YAM2)
-YAM2     ?= /usr
+YAM2     ?= /usr/local
 CXXFLAGS += -I$(YAM2)/include
 LIBS     += -L$(YAM2)/lib -lYAM2 -Wl,-rpath $(YAM2)/lib
 

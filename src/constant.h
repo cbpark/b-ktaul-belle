@@ -5,7 +5,7 @@
 #include <Math/Vector4D.h>
 
 namespace analysis {
-constexpr double MB = 5.279;
+constexpr double MB = 5.28;  // 5.279;
 
 constexpr double MK = 0.4937;
 
