@@ -2,7 +2,6 @@
 
 #include <YAM2/yam2.h>
 #include <cmath>  // std::sqrt
-#include <iostream>
 #include <optional>
 #include "constant.h"
 
