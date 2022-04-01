@@ -3,4 +3,6 @@
 *.o
 *cache*
 *.root
+*.pdf
+*.C
 bin/mtau
