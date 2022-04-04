@@ -7,7 +7,7 @@
 #include <YAM2/yam2.h>
 
 using LorentzVector = ROOT::Math::XYZTVector;
-using Vector3 = ROOT::Math::XYZVectorF;
+using Vector3F = ROOT::Math::XYZVectorF;
 using Vector2 = ROOT::Math::XYVector;
 
 namespace analysis {
@@ -56,14 +56,14 @@ public:
     std::optional<yam2::InputKinematics> to_input_kinematics(
         double m_invisible, double pz_tot) const;
 
-    friend Input mkInputCM(const Vector3 &k_sig_v3, const Vector3 &mu_sig_v3,
-                           const Vector3 &htau_sig_v3, const Vector3 &d_tag_v3,
-                           const Vector3 &mu_tag_v3);
+    friend Input mkInputCM(const Vector3F &k_sig_v3, const Vector3F &mu_sig_v3,
+                           const Vector3F &htau_sig_v3, const Vector3F &d_tag_v3,
+                           const Vector3F &mu_tag_v3);
 };
 
-Input mkInputCM(const Vector3 &k_sig_v3, const Vector3 &mu_sig_v3,
-                const Vector3 &htau_sig_v3, const Vector3 &d_tag_v3,
-                const Vector3 &mu_tag_v3);
+Input mkInputCM(const Vector3F &k_sig_v3, const Vector3F &mu_sig_v3,
+                const Vector3F &htau_sig_v3, const Vector3F &d_tag_v3,
+                const Vector3F &mu_tag_v3);
 }  // namespace analysis
 
 #endif  // B_KTAUL_BELLE_SRC_INPUT_H_

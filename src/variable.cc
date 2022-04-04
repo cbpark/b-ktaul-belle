@@ -1,5 +1,6 @@
 #include "variable.h"
 
+#include <Math/Vector3D.h>
 #include <TRandom3.h>
 #include <YAM2/yam2.h>
 #include <cmath>  // std::sqrt
@@ -7,6 +8,8 @@
 #include <optional>
 #include "constant.h"
 #include "input.h"
+
+using Vector3 = ROOT::Math::XYZVector;
 
 namespace analysis {
 double mRecoil(const Input &input, double cos_theta) {
@@ -20,18 +23,41 @@ double mRecoil(const Input &input, double cos_theta) {
     return m_tau_sq < 0.0 ? -1.0 : std::sqrt(m_tau_sq);
 }
 
+double getCosTheta(const LorentzVector &p1, const LorentzVector &p2) {
+    Vector3 p1_{p1.px(), p1.py(), p1.pz()};
+    Vector3 p2_{p2.px(), p2.py(), p2.pz()};
+
+    double norm1 = p1_.mag();
+    if (norm1 < 1.0e-10) { norm1 = 1.0e-10; }
+    double norm2 = p2_.mag();
+    if (norm2 < 1.0e-10) { norm2 = 1.0e-10; }
+
+    return p1_.dot(p2_) / norm1 / norm2;
+}
+
 M2Reconstruction mkM2Reconstruction(
     const Input &input, const std::optional<yam2::M2Solution> &m2sol) {
     if (!m2sol) { return {-1.0, -1.0}; }
 
     auto m2sol_ = m2sol.value();
-    auto k1sol = m2sol_.k1();
-    LorentzVector k1sol_{k1sol.px(), k1sol.py(), k1sol.pz(), k1sol.e()};
-    auto p_tau = input.htau_sig() + k1sol_;
-    double mtau_sq = p_tau.mass2();
 
+    /* reconstruct the tau mass: m_tau^2 = (p1 + k1)^2. */
+    // auto k1sol = m2sol_.k1();
+    // LorentzVector k1sol_{k1sol.px(), k1sol.py(), k1sol.pz(), k1sol.e()};
+    // auto p_tau = input.htau_sig() + k1sol_;
+    // double mtau_sq = p_tau.mass2();
     // why negative?
-    double mtau = mtau_sq < 0.0 ? -1.0 : std::sqrt(mtau_sq);
+    // double mtau = mtau_sq < 0.0 ? -1.0 : std::sqrt(mtau_sq);
+
+    /* reconstruct the tau mass using m_recoil. */
+    auto k2sol = m2sol_.k2();
+    // reconstructed invisible momentum on the tag side.
+     LorentzVector k2sol_{k2sol.px(), k2sol.py(), k2sol.pz(), k2sol.e()};
+    // reconstructed B_tag using the M2 solution.
+    auto p_b_tag = input.vis_tag() + k2sol_;
+
+    double cos_theta = getCosTheta(p_b_tag, input.kl_sig());
+    double mtau = mRecoil(input, cos_theta);
 
     return {m2sol_.m2(), mtau};
 }

@@ -30,14 +30,14 @@ std::optional<yam2::InputKinematics> Input::to_input_kinematics(
                          {pz_tot});
 }
 
-LorentzVector toLorentzVector(const Vector3 &v3, double mass) {
+LorentzVector toLorentzVector(const Vector3F &v3, double mass) {
     double energy = std::sqrt(v3.mag2() + mass * mass);
     return {v3.x(), v3.y(), v3.z(), energy};
 }
 
-Input mkInputCM(const Vector3 &k_sig_v3, const Vector3 &mu_sig_v3,
-                const Vector3 &htau_sig_v3, const Vector3 &d_tag_v3,
-                const Vector3 &mu_tag_v3) {
+Input mkInputCM(const Vector3F &k_sig_v3, const Vector3F &mu_sig_v3,
+                const Vector3F &htau_sig_v3, const Vector3F &d_tag_v3,
+                const Vector3F &mu_tag_v3) {
     LorentzVector k_sig = toLorentzVector(k_sig_v3, MK);
     k_sig = boostToCM()(k_sig);
 
