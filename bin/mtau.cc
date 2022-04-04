@@ -14,7 +14,7 @@ const double MINVISIBLE = 0.0;
 const double PZTOT = 0.0;
 
 const double EPSILON = 1.0e-10;
-const unsigned int NEVAL = 1000;
+const unsigned int NEVAL = 5000;
 
 int main(int argc, char *argv[]) {
     if (!(argc == 3)) {
@@ -88,13 +88,13 @@ int main(int argc, char *argv[]) {
 
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
-    auto n_fail = 0;
 #ifndef DEBUG
     // --------------------------------------------------------------------------
     // event loop
     for (auto iev = 0; iev != nentries; ++iev) {
 #else
-    for (auto iev = 0; iev != 3; ++iev) {
+    auto itest = 7;
+    for (auto iev = itest; iev != itest + 1; ++iev) {
 #endif
         event->GetEntry(iev);
         // event->Show(iev);
@@ -109,6 +109,13 @@ int main(int argc, char *argv[]) {
              << "vis_tag: " << input.vis_tag() << '\n'
              << "ptmiss: " << input.ptmiss() << "\n\n";
 #endif
+
+        cout << "---\n";
+        cout << "let a1 = FourMomentum::new" << input.vis_sig() << ";\n";
+        cout << "let a2 = FourMomentum::new" << input.vis_tag() << ";\n";
+        cout << "let ptmiss = TransverseMomentum::new" << input.ptmiss()
+             << ";\n";
+        cout << "---\n";
 
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);
@@ -126,13 +133,20 @@ int main(int argc, char *argv[]) {
         std::tie(m2s, mtau_m2s) = m2s_rec.get_result();
 
         // reconstruction using M2sB.
-        auto m2sb_sol = yam2::m2CCons(input_kinematics, EPSILON, NEVAL);
+        auto m2sb_sol = yam2::m2CConsSQP(input_kinematics, EPSILON, NEVAL);
+        // input_kinematics.value().set_eps_constraint(1.0e-4);
+        // auto m2sb_sol = yam2::m2CConsIneq(input_kinematics, EPSILON, NEVAL);
+#ifdef DEBUG
+        cout << m2sb_sol.value() << '\n';
+#endif
         auto m2sb_rec = analysis::mkM2Reconstruction(input, m2sb_sol);
         std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
-        if (m2sb < 0.0) { ++n_fail; }
 
         // fill the event variables.
         output->Fill();
+#ifdef DEBUG
+        output->Show(0);
+#endif
 
         // counter.
         auto nev = iev + 1;
@@ -145,7 +159,7 @@ int main(int argc, char *argv[]) {
 
     infile.Close();
 
-    output->Print();
+    // output->Print();
     output->Write();
 
     outfile.Close();
