@@ -46,13 +46,13 @@ M2Reconstruction mkM2Reconstruction(
     // LorentzVector k1sol_{k1sol.px(), k1sol.py(), k1sol.pz(), k1sol.e()};
     // auto p_tau = input.htau_sig() + k1sol_;
     // double mtau_sq = p_tau.mass2();
-    // why negative?
+    // // why negative?
     // double mtau = mtau_sq < 0.0 ? -1.0 : std::sqrt(mtau_sq);
 
     /* reconstruct the tau mass using m_recoil. */
     auto k2sol = m2sol_.k2();
     // reconstructed invisible momentum on the tag side.
-     LorentzVector k2sol_{k2sol.px(), k2sol.py(), k2sol.pz(), k2sol.e()};
+    LorentzVector k2sol_{k2sol.px(), k2sol.py(), k2sol.pz(), k2sol.e()};
     // reconstructed B_tag using the M2 solution.
     auto p_b_tag = input.vis_tag() + k2sol_;
 
