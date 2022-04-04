@@ -51,21 +51,21 @@ int main(int argc, char *argv[]) {
     Float_t px_dt, py_dt, pz_dt;
     Float_t px_mut, py_mut, pz_mut;
 
-    event->SetBranchAddress("px_ks", &px_ks);
-    event->SetBranchAddress("py_ks", &py_ks);
-    event->SetBranchAddress("pz_ks", &pz_ks);
-    event->SetBranchAddress("px_mus", &px_mus);
-    event->SetBranchAddress("py_mus", &py_mus);
-    event->SetBranchAddress("pz_mus", &pz_mus);
-    event->SetBranchAddress("px_htaus", &px_htaus);
-    event->SetBranchAddress("py_htaus", &py_htaus);
-    event->SetBranchAddress("pz_htaus", &pz_htaus);
-    event->SetBranchAddress("px_dt", &px_dt);
-    event->SetBranchAddress("py_dt", &py_dt);
-    event->SetBranchAddress("pz_dt", &pz_dt);
-    event->SetBranchAddress("px_mut", &px_mut);
-    event->SetBranchAddress("py_mut", &py_mut);
-    event->SetBranchAddress("pz_mut", &pz_mut);
+    event->SetBranchAddress("tpx_ks", &px_ks);
+    event->SetBranchAddress("tpy_ks", &py_ks);
+    event->SetBranchAddress("tpz_ks", &pz_ks);
+    event->SetBranchAddress("tpx_mus", &px_mus);
+    event->SetBranchAddress("tpy_mus", &py_mus);
+    event->SetBranchAddress("tpz_mus", &pz_mus);
+    event->SetBranchAddress("tpx_htaus", &px_htaus);
+    event->SetBranchAddress("tpy_htaus", &py_htaus);
+    event->SetBranchAddress("tpz_htaus", &pz_htaus);
+    event->SetBranchAddress("tpx_dt", &px_dt);
+    event->SetBranchAddress("tpy_dt", &py_dt);
+    event->SetBranchAddress("tpz_dt", &pz_dt);
+    event->SetBranchAddress("tpx_mut", &px_mut);
+    event->SetBranchAddress("tpy_mut", &py_mut);
+    event->SetBranchAddress("tpz_mut", &pz_mut);
 
     TFile outfile{argv[2], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
