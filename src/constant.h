@@ -6,7 +6,7 @@
 #include <cmath>
 
 namespace analysis {
-constexpr double MB = 5.28;  // 5.279;
+constexpr double MB = 5.279;
 constexpr double MBSQ = MB * MB;
 
 constexpr double MK = 0.4937;
