@@ -27,12 +27,12 @@ double getCosTheta(const LorentzVector &p1, const LorentzVector &p2) {
     Vector3 p1_{p1.px(), p1.py(), p1.pz()};
     Vector3 p2_{p2.px(), p2.py(), p2.pz()};
 
-    double norm1 = p1_.mag();
+    double norm1 = p1_.R();
     if (norm1 < 1.0e-10) { norm1 = 1.0e-10; }
-    double norm2 = p2_.mag();
+    double norm2 = p2_.R();
     if (norm2 < 1.0e-10) { norm2 = 1.0e-10; }
 
-    return p1_.dot(p2_) / norm1 / norm2;
+    return p1_.Dot(p2_) / norm1 / norm2;
 }
 
 M2Reconstruction mkM2Reconstruction(
