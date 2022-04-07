@@ -6,3 +6,4 @@
 *.pdf
 *.C
 bin/mtau
+gen/gen_sig_bb
