@@ -41,7 +41,7 @@ M2Reconstruction mkM2Reconstruction(
 
     auto m2sol_ = m2sol.value();
 
-    /* reconstruct the tau mass: m_tau^2 = (p1 + k1)^2. */
+    /* reconstruct the tau mass: m_tau^2 = (htau + k1)^2. */
     // auto k1sol = m2sol_.k1();
     // LorentzVector k1sol_{k1sol.px(), k1sol.py(), k1sol.pz(), k1sol.e()};
     // auto p_tau = input.htau_sig() + k1sol_;

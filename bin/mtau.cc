@@ -14,17 +14,15 @@ using std::cout;
 const double MINVISIBLE = 0.0;
 const double PZTOT = 0.0;
 
-const double EPSILON = 1.0e-9;
+const double EPSILON = 1.0e-10;
 const unsigned int NEVAL = 5000;
 
 int main(int argc, char *argv[]) {
-    if (!(argc == 4)) {
+    if (!(argc == 3)) {
         std::cerr
-            << "usage: ./bin/mtau <event.root> <output.root> <truth/detector>\n"
+            << "usage: ./bin/mtau <event.root> <output.root>\n"
             << "  <event.root>: input root file (required).\n"
-            << "  <output.root>: output file to store the result (required).\n"
-            << "  <truth/detector>: whether to use truth (0) or detector "
-               "(1).\n";
+            << "  <output.root>: output file to store the result (required).\n";
         return 1;
     }
 
@@ -48,52 +46,46 @@ int main(int argc, char *argv[]) {
     // event->Print();
 
     // either truth-level or detector-level.
-    int event_level = std::atoi(argv[3]);
+    // int event_level = std::atoi(argv[3]);
 
     // the particle momenta from the input.
-    Float_t px_ks, py_ks, pz_ks;
-    Float_t px_mus, py_mus, pz_mus;
-    Float_t px_htaus, py_htaus, pz_htaus;
-    Float_t px_dt, py_dt, pz_dt;
-    Float_t px_mut, py_mut, pz_mut;
+    Float_t px_bs, py_bs, pz_bs, e_bs;
+    Float_t px_bt, py_bt, pz_bt, e_bt;
+    Float_t px_ks, py_ks, pz_ks, e_ks;
+    Float_t px_mus, py_mus, pz_mus, e_mus;
+    Float_t px_htaus, py_htaus, pz_htaus, e_htaus;
+    Float_t px_dt, py_dt, pz_dt, e_dt;
+    Float_t px_mut, py_mut, pz_mut, e_mut;
 
-    if (event_level == 0) {
-        event->SetBranchAddress("tpx_ks", &px_ks);
-        event->SetBranchAddress("tpy_ks", &py_ks);
-        event->SetBranchAddress("tpz_ks", &pz_ks);
-        event->SetBranchAddress("tpx_mus", &px_mus);
-        event->SetBranchAddress("tpy_mus", &py_mus);
-        event->SetBranchAddress("tpz_mus", &pz_mus);
-        event->SetBranchAddress("tpx_htau", &px_htaus);
-        event->SetBranchAddress("tpy_htau", &py_htaus);
-        event->SetBranchAddress("tpz_htau", &pz_htaus);
-        event->SetBranchAddress("tpx_dt", &px_dt);
-        event->SetBranchAddress("tpy_dt", &py_dt);
-        event->SetBranchAddress("tpz_dt", &pz_dt);
-        event->SetBranchAddress("tpx_mut", &px_mut);
-        event->SetBranchAddress("tpy_mut", &py_mut);
-        event->SetBranchAddress("tpz_mut", &pz_mut);
-    } else if (event_level == 1) {
-        event->SetBranchAddress("px_ks", &px_ks);
-        event->SetBranchAddress("py_ks", &py_ks);
-        event->SetBranchAddress("pz_ks", &pz_ks);
-        event->SetBranchAddress("px_mus", &px_mus);
-        event->SetBranchAddress("py_mus", &py_mus);
-        event->SetBranchAddress("pz_mus", &pz_mus);
-        event->SetBranchAddress("px_htaus", &px_htaus);
-        event->SetBranchAddress("py_htaus", &py_htaus);
-        event->SetBranchAddress("pz_htaus", &pz_htaus);
-        event->SetBranchAddress("px_dt", &px_dt);
-        event->SetBranchAddress("py_dt", &py_dt);
-        event->SetBranchAddress("pz_dt", &pz_dt);
-        event->SetBranchAddress("px_mut", &px_mut);
-        event->SetBranchAddress("py_mut", &py_mut);
-        event->SetBranchAddress("pz_mut", &pz_mut);
-    } else {
-        std::cerr << "-- Invalid event data level (truth = 0, detector = 1).\n";
-        infile.Close();
-        return 1;
-    }
+    // cout << "-- Use the truth-level data.\n";
+    event->SetBranchAddress("tpx_bs", &px_bs);
+    event->SetBranchAddress("tpy_bs", &py_bs);
+    event->SetBranchAddress("tpz_bs", &pz_bs);
+    event->SetBranchAddress("te_bs", &e_bs);
+    event->SetBranchAddress("tpx_bt", &px_bt);
+    event->SetBranchAddress("tpy_bt", &py_bt);
+    event->SetBranchAddress("tpz_bt", &pz_bt);
+    event->SetBranchAddress("te_bt", &e_bt);
+    event->SetBranchAddress("tpx_ks", &px_ks);
+    event->SetBranchAddress("tpy_ks", &py_ks);
+    event->SetBranchAddress("tpz_ks", &pz_ks);
+    event->SetBranchAddress("te_ks", &e_ks);
+    event->SetBranchAddress("tpx_mus", &px_mus);
+    event->SetBranchAddress("tpy_mus", &py_mus);
+    event->SetBranchAddress("tpz_mus", &pz_mus);
+    event->SetBranchAddress("te_mus", &e_mus);
+    event->SetBranchAddress("tpx_htau", &px_htaus);
+    event->SetBranchAddress("tpy_htau", &py_htaus);
+    event->SetBranchAddress("tpz_htau", &pz_htaus);
+    event->SetBranchAddress("te_htaus", &e_htaus);
+    event->SetBranchAddress("tpx_dt", &px_dt);
+    event->SetBranchAddress("tpy_dt", &py_dt);
+    event->SetBranchAddress("tpz_dt", &pz_dt);
+    event->SetBranchAddress("te_dt", &e_dt);
+    event->SetBranchAddress("tpx_mut", &px_mut);
+    event->SetBranchAddress("tpy_mut", &py_mut);
+    event->SetBranchAddress("tpz_mut", &pz_mut);
+    event->SetBranchAddress("te_mut", &e_mut);
 
     TFile outfile{argv[2], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
@@ -121,16 +113,24 @@ int main(int argc, char *argv[]) {
     // event loop
     for (auto iev = 0; iev != nentries; ++iev) {
 #else
-    auto itest = 9;
+    auto itest = 0;
     for (auto iev = itest; iev != itest + 1; ++iev) {
 #endif
         event->GetEntry(iev);
         // event->Show(iev);
 
+        // auto input = analysis::mkInputCM<Vector3F>(
+        //     {px_ks, py_ks, pz_ks}, {px_mus, py_mus, pz_mus},
+        //     {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
+        //     {px_mut, py_mut, pz_mut});
+        // auto input = analysis::mkInputCM<Vector3F>(
+        //     {px_bs, py_bs}, {px_bt, py_bt}, {px_ks, py_ks, pz_ks},
+        //     {px_mus, py_mus, pz_mus}, {px_htaus, py_htaus, pz_htaus},
+        //     {px_dt, py_dt, pz_dt}, {px_mut, py_mut, pz_mut});
         auto input = analysis::mkInputCM(
-            {px_ks, py_ks, pz_ks}, {px_mus, py_mus, pz_mus},
-            {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
-            {px_mut, py_mut, pz_mut});
+            {px_ks, py_ks, pz_ks, e_ks}, {px_mus, py_mus, pz_mus, e_mus},
+            {px_htaus, py_htaus, pz_htaus, e_htaus},
+            {px_dt, py_dt, pz_dt, e_dt}, {px_mut, py_mut, pz_mut, e_mut});
 
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
@@ -139,10 +139,11 @@ int main(int argc, char *argv[]) {
 #endif
 
         // cout << "---\n";
-        // cout << "let a1 = FourMomentum::new" << input.vis_sig() << ";\n";
-        // cout << "let a2 = FourMomentum::new" << input.vis_tag() << ";\n";
+        // cout << "let vis1 = FourMomentum::new" << input.vis_sig() << ";\n";
+        // cout << "let vis2 = FourMomentum::new" << input.vis_tag() << ";\n";
         // cout << "let ptmiss = TransverseMomentum::new" << input.ptmiss()
         //      << ";\n";
+        // cout << "let kl_sig = FourMomentum::new" << input.kl_sig() << ";\n";
         // cout << "---\n";
 
         // mtau using random cos(theta).
@@ -161,9 +162,9 @@ int main(int argc, char *argv[]) {
         std::tie(m2s, mtau_m2s) = m2s_rec.get_result();
 
         // reconstruction using M2sB.
-        // auto m2sb_sol = yam2::m2CCons(input_kinematics, EPSILON, NEVAL);
-        input_kinematics.value().set_eps_constraint(1.0e-2);
-        auto m2sb_sol = yam2::m2CConsIneq(input_kinematics, EPSILON, NEVAL);
+        auto m2sb_sol = yam2::m2CCons(input_kinematics, EPSILON, NEVAL);
+        // input_kinematics.value().set_eps_constraint(1.0e-2);
+        // auto m2sb_sol = yam2::m2CConsIneq(input_kinematics, EPSILON, NEVAL);
 #ifdef DEBUG
         cout << m2sb_sol.value() << '\n';
 #endif
