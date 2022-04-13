@@ -5,6 +5,7 @@
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
 #include <YAM2/yam2.h>
+#include <optional>
 #include "constant.h"
 
 using LorentzVector = ROOT::Math::XYZTVector;
@@ -72,7 +73,8 @@ public:
                            const LorentzVector &mu_sig,
                            const LorentzVector &htau_sig,
                            const LorentzVector &d_tag,
-                           const LorentzVector &mu_tag);
+                           const LorentzVector &mu_tag,
+                           const std::optional<Vector2> &ptmiss);
 
     // template <typename V3>
     // friend Input mkInputCM(const V3 &k_sig_v3, const V3 &mu_sig_v3,
@@ -80,7 +82,8 @@ public:
     //                        const V3 &mu_tag_v3);
 
     // template <typename V3>
-    // friend Input mkInputCM(const Vector2F &b_sig_v2, const Vector2F &b_tag_v2,
+    // friend Input mkInputCM(const Vector2F &b_sig_v2, const Vector2F
+    // &b_tag_v2,
     //                        const V3 &k_sig_v3, const V3 &mu_sig_v3,
     //                        const V3 &htau_sig_v3, const V3 &d_tag_v3,
     //                        const V3 &mu_tag_v3);
@@ -93,19 +96,31 @@ public:
 // }
 
 inline Input mkInputCM(const LorentzVector &k_sig, const LorentzVector &mu_sig,
-                const LorentzVector &htau_sig, const LorentzVector &d_tag,
-                const LorentzVector &mu_tag) {
+                       const LorentzVector &htau_sig,
+                       const LorentzVector &d_tag, const LorentzVector &mu_tag,
+                       const std::optional<Vector2> &ptmiss = {}) {
+    // std::cout << "k_sig(before): " << k_sig << '\n';
     LorentzVector k_sig_cm = boostToCM()(k_sig);
+    // std::cout << "mu_sig(before): " << mu_sig << '\n';
     LorentzVector mu_sig_cm = boostToCM()(mu_sig);
+    // std::cout << "htau_sig(before): " << htau_sig << '\n';
     LorentzVector htau_sig_cm = boostToCM()(htau_sig);
+    // std::cout << "d_tag(before): " << d_tag << '\n';
     LorentzVector d_tag_cm = boostToCM()(d_tag);
+    // std::cout << "mu_tag(before): " << mu_tag << '\n';
     LorentzVector mu_tag_cm = boostToCM()(mu_tag);
 
-    return {k_sig_cm, mu_sig_cm, htau_sig_cm, d_tag_cm, mu_tag_cm};
+    if (!ptmiss) {
+        return {k_sig_cm, mu_sig_cm, htau_sig_cm, d_tag_cm, mu_tag_cm};
+    } else {
+        return {k_sig_cm, mu_sig_cm, htau_sig_cm,
+                d_tag_cm, mu_tag_cm, ptmiss.value()};
+    }
 }
 
 // template <typename V3>
-// Input mkInputCM(const V3 &k_sig_v3, const V3 &mu_sig_v3, const V3 &htau_sig_v3,
+// Input mkInputCM(const V3 &k_sig_v3, const V3 &mu_sig_v3, const V3
+// &htau_sig_v3,
 //                 const V3 &d_tag_v3, const V3 &mu_tag_v3) {
 //     LorentzVector k_sig = toLorentzVector(k_sig_v3, MK);
 //     // std::cout << "k_sig(before): " << k_sig << '\n';
@@ -137,8 +152,8 @@ inline Input mkInputCM(const LorentzVector &k_sig, const LorentzVector &mu_sig,
 
 // template <typename V3>
 // Input mkInputCM(const Vector2F &b_sig_v2, const Vector2F &b_tag_v2,
-//                 const V3 &k_sig_v3, const V3 &mu_sig_v3, const V3 &htau_sig_v3,
-//                 const V3 &d_tag_v3, const V3 &mu_tag_v3) {
+//                 const V3 &k_sig_v3, const V3 &mu_sig_v3, const V3
+//                 &htau_sig_v3, const V3 &d_tag_v3, const V3 &mu_tag_v3) {
 //     LorentzVector k_sig = toLorentzVector(k_sig_v3, MK);
 //     // std::cout << "k_sig(before): " << k_sig << '\n';
 //     k_sig = boostToCM()(k_sig);
@@ -164,7 +179,8 @@ inline Input mkInputCM(const LorentzVector &k_sig, const LorentzVector &mu_sig,
 //     mu_tag = boostToCM()(mu_tag);
 //     // std::cout << "mu_tag(after): " << mu_tag << '\n';
 
-//     // We don't need to boost the B mesons because the transverse components do
+//     // We don't need to boost the B mesons because the transverse components
+//     do
 //     // not transform.
 //     auto pt_bb = b_sig_v2 + b_tag_v2;
 //     LorentzVector pvis_tot = k_sig + mu_sig + htau_sig + d_tag + mu_tag;

@@ -2,6 +2,7 @@
 #include <TFile.h>
 #include <TRandom3.h>
 #include <TTree.h>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <memory>  // std::shared_ptr
@@ -18,11 +19,12 @@ const double EPSILON = 1.0e-10;
 const unsigned int NEVAL = 5000;
 
 int main(int argc, char *argv[]) {
-    if (!(argc == 3)) {
+    if (!(argc == 4)) {
         std::cerr
-            << "usage: ./bin/mtau <event.root> <output.root>\n"
+            << "usage: ./bin/mtau <event.root> <output.root> <tau_decay_mode>\n"
             << "  <event.root>: input root file (required).\n"
-            << "  <output.root>: output file to store the result (required).\n";
+            << "  <output.root>: output file to store the result (required).\n"
+            << "  <tau_decay_mode>: 0 (all) 1 (hadronic) 2 (leptonic)\n";
         return 1;
     }
 
@@ -45,27 +47,34 @@ int main(int argc, char *argv[]) {
     auto event = infile.Get<TTree>(treename);
     // event->Print();
 
-    // either truth-level or detector-level.
-    // int event_level = std::atoi(argv[3]);
+    int tau_decay_mode = std::atoi(argv[3]);
+    if (tau_decay_mode == 0) {
+        cout << "-- Use all the decay modes of tau.\n";
+    } else if (tau_decay_mode == 1) {
+        cout << "-- Use hadronic decay modes of tau.\n";
+    } else if (tau_decay_mode == 2) {
+        cout << "-- Use leptonic decay modes of tau.\n";
+    } else {
+        std::cerr
+            << "-- The tau decay mode must be set to be either 0, 1, or 2.\n";
+        return 1;
+    }
 
     // the particle momenta from the input.
-    Float_t px_bs, py_bs, pz_bs, e_bs;
-    Float_t px_bt, py_bt, pz_bt, e_bt;
+    Float_t i_htaus;
     Float_t px_ks, py_ks, pz_ks, e_ks;
     Float_t px_mus, py_mus, pz_mus, e_mus;
     Float_t px_htaus, py_htaus, pz_htaus, e_htaus;
     Float_t px_dt, py_dt, pz_dt, e_dt;
     Float_t px_mut, py_mut, pz_mut, e_mut;
 
+    Float_t px_bs, py_bs, pz_bs, e_bs;
+    Float_t px_bt, py_bt, pz_bt, e_bt;
+    Float_t px_taus, py_taus;
+    Float_t px_nut, py_nut;
+
     // cout << "-- Use the truth-level data.\n";
-    event->SetBranchAddress("tpx_bs", &px_bs);
-    event->SetBranchAddress("tpy_bs", &py_bs);
-    event->SetBranchAddress("tpz_bs", &pz_bs);
-    event->SetBranchAddress("te_bs", &e_bs);
-    event->SetBranchAddress("tpx_bt", &px_bt);
-    event->SetBranchAddress("tpy_bt", &py_bt);
-    event->SetBranchAddress("tpz_bt", &pz_bt);
-    event->SetBranchAddress("te_bt", &e_bt);
+    event->SetBranchAddress("i_htaus", &i_htaus);
     event->SetBranchAddress("tpx_ks", &px_ks);
     event->SetBranchAddress("tpy_ks", &py_ks);
     event->SetBranchAddress("tpz_ks", &pz_ks);
@@ -86,6 +95,19 @@ int main(int argc, char *argv[]) {
     event->SetBranchAddress("tpy_mut", &py_mut);
     event->SetBranchAddress("tpz_mut", &pz_mut);
     event->SetBranchAddress("te_mut", &e_mut);
+
+    event->SetBranchAddress("tpx_bs", &px_bs);
+    event->SetBranchAddress("tpy_bs", &py_bs);
+    event->SetBranchAddress("tpz_bs", &pz_bs);
+    event->SetBranchAddress("te_bs", &e_bs);
+    event->SetBranchAddress("tpx_bt", &px_bt);
+    event->SetBranchAddress("tpy_bt", &py_bt);
+    event->SetBranchAddress("tpz_bt", &pz_bt);
+    event->SetBranchAddress("te_bt", &e_bt);
+    event->SetBranchAddress("tpx_taus", &px_taus);
+    event->SetBranchAddress("tpy_taus", &py_taus);
+    event->SetBranchAddress("tpx_nut", &px_nut);
+    event->SetBranchAddress("tpy_nut", &py_nut);
 
     TFile outfile{argv[2], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
@@ -108,16 +130,40 @@ int main(int argc, char *argv[]) {
 
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
+    unsigned int n_tau_decay_mode = 0;
 #ifndef DEBUG
     // --------------------------------------------------------------------------
     // event loop
     for (auto iev = 0; iev != nentries; ++iev) {
 #else
-    auto itest = 0;
-    for (auto iev = itest; iev != itest + 1; ++iev) {
+    auto itest = 1200;
+    for (auto iev = itest; iev != itest + 5; ++iev) {
 #endif
         event->GetEntry(iev);
         // event->Show(iev);
+
+        if (tau_decay_mode != 0) {
+            int id_tau_daughter = std::abs(i_htaus);
+            if (id_tau_daughter == 211 || id_tau_daughter == 321) {
+                if (tau_decay_mode != 1) { continue; }
+            } else if (id_tau_daughter == 11 || id_tau_daughter == 13) {
+                if (tau_decay_mode != 2) { continue; }
+            } else {
+                cout << "-- i_htaus: " << i_htaus << '\n';
+                continue;
+            }
+        }
+        ++n_tau_decay_mode;
+#ifdef DEBUG
+        cout << "-- id_tau_daughter: " << std::abs(i_htaus) << '\n';
+
+        cout << "--\n";
+        cout << "bs: (" << px_bs << ", " << py_bs << ", " << pz_bs << ", "
+             << e_bs << ")\n";
+        cout << "prod(bs): (" << px_ks + px_mus + px_taus << ", "
+             << py_ks + py_mus + py_taus << ")\n";
+        cout << "--\n";
+#endif
 
         // auto input = analysis::mkInputCM<Vector3F>(
         //     {px_ks, py_ks, pz_ks}, {px_mus, py_mus, pz_mus},
@@ -131,6 +177,11 @@ int main(int argc, char *argv[]) {
             {px_ks, py_ks, pz_ks, e_ks}, {px_mus, py_mus, pz_mus, e_mus},
             {px_htaus, py_htaus, pz_htaus, e_htaus},
             {px_dt, py_dt, pz_dt, e_dt}, {px_mut, py_mut, pz_mut, e_mut});
+        // auto input = analysis::mkInputCM(
+        //     {px_ks, py_ks, pz_ks, e_ks}, {px_mus, py_mus, pz_mus, e_mus},
+        //     {px_htaus, py_htaus, pz_htaus, e_htaus},
+        //     {px_dt, py_dt, pz_dt, e_dt}, {px_mut, py_mut, pz_mut, e_mut},
+        //     {{px_taus - px_htaus + px_nut, py_taus - py_htaus + py_nut}});
 
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
@@ -192,4 +243,6 @@ int main(int argc, char *argv[]) {
     output->Write();
 
     outfile.Close();
+
+    cout << "-- " << n_tau_decay_mode << " events analyzed.\n";
 }

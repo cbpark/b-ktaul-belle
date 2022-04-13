@@ -6,4 +6,5 @@
 *.pdf
 *.C
 bin/mtau
+bin/mtau_phasespace
 gen/gen_sig_bb
