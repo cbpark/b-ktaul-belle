@@ -27,9 +27,11 @@ const double MUNUNU[3] = {analysis::MMU, 0.0, 0.0};
 const double ENUNU[3] = {0.0, 0.0, 0.0};
 
 const double MINVISIBLE = 0.0;
-const double PZTOT = 0.0;
+const double PZTOT = analysis::PLONG;
 
-const double EPSILON = 1.0e-10;
+const double SQRTS = 10.583;
+
+const double EPSILON = 1.0e-6;
 const unsigned int NEVAL = 1000;
 
 void print_momentum(const std::string pname, TLorentzVector &p) {
@@ -39,7 +41,7 @@ void print_momentum(const std::string pname, TLorentzVector &p) {
 
 int main(int, char *argv[]) {
     // total number of events
-    const auto nev = 100000;
+    const auto nev = 20000;
 
     TFile outfile{argv[1], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
@@ -48,6 +50,8 @@ int main(int, char *argv[]) {
     Double_t mtau_random;
     Double_t m2s, mtau_m2s;
     Double_t m2sb, mtau_m2sb;
+    Double_t m2sv_eq, mtau_m2sv_eq;
+    Double_t m2v_eq, mtau_m2v_eq;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
     output->Branch("mtau_random", &mtau_random, "mtau_random/D");
@@ -55,6 +59,10 @@ int main(int, char *argv[]) {
     output->Branch("mtau_m2s", &mtau_m2s, "mtau_m2s/D");
     output->Branch("m2sb", &m2sb, "m2sb/D");
     output->Branch("mtau_m2sb", &mtau_m2sb, "mtau_m2sb/D");
+    output->Branch("m2sv_eq", &m2sv_eq, "m2sv_eq/D");
+    output->Branch("mtau_m2sv_eq", &mtau_m2sv_eq, "mtau_m2sv_eq/D");
+    output->Branch("m2v_eq", &m2v_eq, "m2v_eq/D");
+    output->Branch("mtau_m2v_eq", &mtau_m2v_eq, "mtau_m2v_eq/D");
 
     // incoming electron and positron beams.
     TLorentzVector em{0.0, 0.0, analysis::EEM, analysis::EEM};
@@ -91,9 +99,9 @@ int main(int, char *argv[]) {
 
         // tau(sig) --> htau + nu.
         TGenPhaseSpace tau_sig_decay;
-        // tau_sig_decay.SetDecay(*tau_sig, 2, PINU);
+        tau_sig_decay.SetDecay(*tau_sig, 2, PINU);
         // tau_sig_decay.SetDecay(*tau_sig, 3, MUNUNU);
-        tau_sig_decay.SetDecay(*tau_sig, 3, ENUNU);
+        // tau_sig_decay.SetDecay(*tau_sig, 3, ENUNU);
         tau_sig_decay.Generate();
 
         // the visible product of tau(sig) decay.
@@ -103,12 +111,14 @@ int main(int, char *argv[]) {
         auto d_tag = b_tag_decay.GetDecay(0);
         auto mu_tag = b_tag_decay.GetDecay(1);
 
-        auto input = analysis::mkInputCM(
+        auto input = analysis::mkInput(
             {k_sig->Px(), k_sig->Py(), k_sig->Pz(), k_sig->E()},
             {mu_sig->Px(), mu_sig->Py(), mu_sig->Pz(), mu_sig->E()},
             {htaus_sig->Px(), htaus_sig->Py(), htaus_sig->Pz(), htaus_sig->E()},
             {d_tag->Px(), d_tag->Py(), d_tag->Pz(), d_tag->E()},
-            {mu_tag->Px(), mu_tag->Py(), mu_tag->Pz(), mu_tag->E()});
+            {mu_tag->Px(), mu_tag->Py(), mu_tag->Pz(), mu_tag->E()}, SQRTS, {},
+            {{0.0, 0.0, 0.0}}, {{b_sig->Px(), b_sig->Py(), b_sig->Pz()}},
+            {{b_tag->Px(), b_tag->Py(), b_tag->Pz()}});
 
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);
@@ -134,6 +144,29 @@ int main(int, char *argv[]) {
 #endif
         auto m2sb_rec = analysis::mkM2Reconstruction(input, m2sb_sol);
         std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
+
+        auto input_kinematics_with_vertex =
+            input.to_input_kinematics_with_vertex(input_kinematics, PZTOT);
+
+        // reconstruction using M2sV(eq).
+        auto m2sv_eq_sol =
+            yam2::m2ConsVertexEq(input_kinematics_with_vertex, EPSILON, NEVAL);
+        auto m2sv_eq_rec = analysis::mkM2Reconstruction(input, m2sv_eq_sol);
+        std::tie(m2sv_eq, mtau_m2sv_eq) = m2sv_eq_rec.get_result();
+
+        // reconstruction using M2sBV(eq).
+        // auto m2sbv_eq_sol =
+        //     yam2::m2CConsVertexEq(input_kinematics_with_vertex, EPSILON,
+        //     NEVAL);
+        // auto m2sbv_eq_rec = analysis::mkM2Reconstruction(input,
+        // m2sbv_eq_sol); std::tie(m2sbv_eq, mtau_m2sbv_eq) =
+        // m2sbv_eq_rec.get_result();
+
+        // reconstruction using M2V(eq).
+        auto m2v_eq_sol =
+            yam2::m2VertexEq(input_kinematics_with_vertex, EPSILON, NEVAL);
+        auto m2v_eq_rec = analysis::mkM2Reconstruction(input, m2v_eq_sol);
+        std::tie(m2v_eq, mtau_m2v_eq) = m2v_eq_rec.get_result();
 
         // fill the event variables.
         output->Fill();

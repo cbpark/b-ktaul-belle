@@ -5,8 +5,8 @@
 #include <YAM2/yam2.h>
 #include <memory>
 #include <optional>
-#include "input.h"
 #include <utility>
+#include "input.h"
 
 namespace analysis {
 class M2Reconstruction {
@@ -35,6 +35,8 @@ M2Reconstruction mkM2Reconstruction(
     const Input &input, const std::optional<yam2::M2Solution> &m2sol);
 
 double mRecoilRandom(const Input &input, std::shared_ptr<TRandom3> rnd);
+
+double mTotal(const Input &input, const std::optional<yam2::M2Solution> &m2sol);
 }  // namespace analysis
 
 #endif  // B_KTAUL_BELLE_SRC_VARIABLE_H_

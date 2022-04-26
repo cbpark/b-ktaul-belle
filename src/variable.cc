@@ -14,12 +14,14 @@ using Vector3 = ROOT::Math::XYZVector;
 namespace analysis {
 double mRecoil(const Input &input, double cos_theta) {
     auto kl_sig = input.k_sig() + input.mu_sig();
+    kl_sig = boostToCM()(kl_sig);
     double m_kl_sq = kl_sig.mass2();
     double e_kl = kl_sig.e();
     double p_kl = kl_sig.P();
 
     double m_tau_sq =
-        MBSQ + m_kl_sq - 2.0 * (EBCM * e_kl + PBCM() * p_kl * cos_theta);
+        MBSQ + m_kl_sq -
+        2.0 * (input.eb_cm() * e_kl + input.pb_cm() * p_kl * cos_theta);
     return m_tau_sq < 0.0 ? -1.0 : std::sqrt(m_tau_sq);
 }
 
@@ -55,8 +57,11 @@ M2Reconstruction mkM2Reconstruction(
     LorentzVector k2sol_{k2sol.px(), k2sol.py(), k2sol.pz(), k2sol.e()};
     // reconstructed B_tag using the M2 solution.
     auto p_b_tag = input.vis_tag() + k2sol_;
+    p_b_tag = boostToCM()(p_b_tag);
+    auto kl_sig = input.kl_sig();
+    kl_sig = boostToCM()(kl_sig);
 
-    double cos_theta = getCosTheta(p_b_tag, input.kl_sig());
+    double cos_theta = getCosTheta(p_b_tag, kl_sig);
     double mtau = mRecoil(input, cos_theta);
 
     return {m2sol_.m2(), mtau};
@@ -65,5 +70,18 @@ M2Reconstruction mkM2Reconstruction(
 double mRecoilRandom(const Input &input, std::shared_ptr<TRandom3> rnd) {
     double cos_theta = rnd->Uniform(-1.0, 1.0);
     return mRecoil(input, cos_theta);
+}
+double mTotal(const Input &input,
+              const std::optional<yam2::M2Solution> &m2sol) {
+    if (!m2sol) { return -1.0; }
+
+    auto m2sol_ = m2sol.value();
+    auto k1sol = m2sol_.k1();
+    LorentzVector k1{k1sol.px(), k1sol.py(), k1sol.pz(), k1sol.e()};
+    auto k2sol = m2sol_.k2();
+    LorentzVector k2{k2sol.px(), k2sol.py(), k2sol.pz(), k2sol.e()};
+
+    auto ptot = input.vis_sig() + k1 + input.vis_tag() + k2;
+    return ptot.M();
 }
 }  // namespace analysis
