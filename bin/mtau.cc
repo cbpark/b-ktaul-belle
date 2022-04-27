@@ -78,12 +78,7 @@ int main(int argc, char *argv[]) {
     Float_t vx_bs, vy_bs, vz_bs;
     Float_t vx_bt, vy_bt, vz_bt;
 
-    Float_t px_bs, py_bs, pz_bs, e_bs;
-    Float_t px_bt, py_bt, pz_bt, e_bt;
-    Float_t px_taus, py_taus;
-    Float_t px_nut, py_nut;
-
-    // cout << "-- Use the truth-level data.\n";
+    cout << "-- Use the reco-level data.\n";
     event->SetBranchAddress("i_htaus", &i_htaus);
     event->SetBranchAddress("px_ks", &px_ks);
     event->SetBranchAddress("py_ks", &py_ks);
@@ -93,18 +88,28 @@ int main(int argc, char *argv[]) {
     event->SetBranchAddress("py_mus", &py_mus);
     event->SetBranchAddress("pz_mus", &pz_mus);
     event->SetBranchAddress("E_mus", &e_mus);
-    event->SetBranchAddress("px_htaus", &px_htaus);
-    event->SetBranchAddress("py_htaus", &py_htaus);
-    event->SetBranchAddress("pz_htaus", &pz_htaus);
-    event->SetBranchAddress("E_htaus", &e_htaus);
-    event->SetBranchAddress("px_dt", &px_dt);
-    event->SetBranchAddress("py_dt", &py_dt);
-    event->SetBranchAddress("pz_dt", &pz_dt);
-    event->SetBranchAddress("E_dt", &e_dt);
+    event->SetBranchAddress("tpx_htau", &px_htaus);
+    event->SetBranchAddress("tpy_htau", &py_htaus);
+    event->SetBranchAddress("tpz_htau", &pz_htaus);
+    event->SetBranchAddress("te_htaus", &e_htaus);
+    event->SetBranchAddress("tpx_dt", &px_dt);
+    event->SetBranchAddress("tpy_dt", &py_dt);
+    event->SetBranchAddress("tpz_dt", &pz_dt);
+    event->SetBranchAddress("te_dt", &e_dt);
     event->SetBranchAddress("px_mut", &px_mut);
     event->SetBranchAddress("py_mut", &py_mut);
     event->SetBranchAddress("pz_mut", &pz_mut);
     event->SetBranchAddress("E_mut", &e_mut);
+
+    // event->SetBranchAddress("vx_ip", &vx_ip);
+    // event->SetBranchAddress("vy_ip", &vy_ip);
+    // event->SetBranchAddress("vz_ip", &vz_ip);
+    // event->SetBranchAddress("vx_bs", &vx_bs);
+    // event->SetBranchAddress("vy_bs", &vy_bs);
+    // event->SetBranchAddress("vz_bs", &vz_bs);
+    // event->SetBranchAddress("vx_bt", &vx_bt);
+    // event->SetBranchAddress("vy_bt", &vy_bt);
+    // event->SetBranchAddress("vz_bt", &vz_bt);
 
     event->SetBranchAddress("vx_ip", &vx_ip);
     event->SetBranchAddress("vy_ip", &vy_ip);
@@ -115,19 +120,6 @@ int main(int argc, char *argv[]) {
     event->SetBranchAddress("vx_bt", &vx_bt);
     event->SetBranchAddress("vy_bt", &vy_bt);
     event->SetBranchAddress("vz_bt", &vz_bt);
-
-    event->SetBranchAddress("tpx_bs", &px_bs);
-    event->SetBranchAddress("tpy_bs", &py_bs);
-    event->SetBranchAddress("tpz_bs", &pz_bs);
-    event->SetBranchAddress("te_bs", &e_bs);
-    event->SetBranchAddress("tpx_bt", &px_bt);
-    event->SetBranchAddress("tpy_bt", &py_bt);
-    event->SetBranchAddress("tpz_bt", &pz_bt);
-    event->SetBranchAddress("te_bt", &e_bt);
-    event->SetBranchAddress("tpx_taus", &px_taus);
-    event->SetBranchAddress("tpy_taus", &py_taus);
-    event->SetBranchAddress("tpx_nut", &px_nut);
-    event->SetBranchAddress("tpy_nut", &py_nut);
 
     TFile outfile{argv[2], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
@@ -150,6 +142,10 @@ int main(int argc, char *argv[]) {
     output->Branch("m2v_eq", &m2v_eq, "m2v_eq/D");
     output->Branch("mtau_m2v_eq", &mtau_m2v_eq, "mtau_m2v_eq/D");
 
+    LorentzVector k_sig, mu_sig, htau_sig;
+    LorentzVector d_tag, mu_tag;
+    Vector3 v_ip, v_bs, v_bt;
+
     // the random number generator for mtau_random.
     auto rnd = std::make_shared<TRandom3>();
     rnd->SetSeed(42);
@@ -163,7 +159,7 @@ int main(int argc, char *argv[]) {
     for (auto iev = 0; iev != nentries; ++iev) {
 #else
     auto itest = 0;
-    for (auto iev = itest; iev != itest + 3; ++iev) {
+    for (auto iev = itest; iev != itest + 1; ++iev) {
 #endif
         // counter.
         auto nev = iev + 1;
@@ -190,39 +186,25 @@ int main(int argc, char *argv[]) {
         ++n_tau_decay_mode;
 #ifdef DEBUG
         cout << "-- id_tau_daughter: " << std::abs(i_htaus) << '\n';
-
-        // cout << "--\n";
-        // cout << "bs: (" << px_bs << ", " << py_bs << ", " << pz_bs << ", "
-        //      << e_bs << ")\n";
-        // cout << "prod(bs): (" << px_ks + px_mus + px_taus << ", "
-        //      << py_ks + py_mus + py_taus << ")\n";
-        // cout << "--\n";
 #endif
-        // auto input = analysis::mkInput<Vector3F>(
-        //     {px_ks, py_ks, pz_ks}, {px_mus, py_mus, pz_mus},
-        //     {px_htaus, py_htaus, pz_htaus}, {px_dt, py_dt, pz_dt},
-        //     {px_mut, py_mut, pz_mut});
-        // auto input = analysis::mkInput<Vector3F>(
-        //     {px_bs, py_bs}, {px_bt, py_bt}, {px_ks, py_ks, pz_ks},
-        //     {px_mus, py_mus, pz_mus}, {px_htaus, py_htaus, pz_htaus},
-        //     {px_dt, py_dt, pz_dt}, {px_mut, py_mut, pz_mut});
-        auto input = analysis::mkInput(
-            {px_ks, py_ks, pz_ks, e_ks}, {px_mus, py_mus, pz_mus, e_mus},
-            {px_htaus, py_htaus, pz_htaus, e_htaus},
-            {px_dt, py_dt, pz_dt, e_dt}, {px_mut, py_mut, pz_mut, e_mut}, SQRTS,
-            {}, {{vx_ip, vy_ip, vz_ip}}, {{vx_bs, vy_bs, vz_bs}},
-            {{vx_bt, vy_bt, vz_bt}});
-        // auto input = analysis::mkInput(
-        //     {px_ks, py_ks, pz_ks, e_ks}, {px_mus, py_mus, pz_mus, e_mus},
-        //     {px_htaus, py_htaus, pz_htaus, e_htaus},
-        //     {px_dt, py_dt, pz_dt, e_dt}, {px_mut, py_mut, pz_mut, e_mut},
-        //     {{px_taus - px_htaus + px_nut, py_taus - py_htaus + py_nut}});
+
+        k_sig = LorentzVector(px_ks, py_ks, pz_ks, e_ks);
+        mu_sig = LorentzVector(px_mus, py_mus, pz_mus, e_mus);
+        htau_sig = LorentzVector(px_htaus, py_htaus, pz_htaus, e_htaus);
+        d_tag = LorentzVector(px_dt, py_dt, pz_dt, e_dt);
+        mu_tag = LorentzVector(px_mut, py_mut, pz_mut, e_mut);
+
+        v_ip = Vector3(vx_ip, vy_ip, vz_ip);
+        v_bs = Vector3(vx_bs, vy_bs, vz_bs);
+        v_bt = Vector3(vx_bt, vy_bt, vz_bt);
+
+        auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
+                                       SQRTS, {}, {v_ip}, {v_bs}, {v_bt});
 
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
              << "vis_tag: " << input.vis_tag() << '\n'
              << "ptmiss: " << input.ptmiss() << "\n\n";
-#endif
 
         // cout << "---\n";
         // cout << "let vis1 = FourMomentum::new" << input.vis_sig() << ";\n";
@@ -231,6 +213,7 @@ int main(int argc, char *argv[]) {
         //      << ";\n";
         // cout << "let kl_sig = FourMomentum::new" << input.kl_sig() << ";\n";
         // cout << "---\n";
+#endif
 
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);
@@ -277,8 +260,13 @@ int main(int argc, char *argv[]) {
         auto m2sv_eq_rec = analysis::mkM2Reconstruction(input, m2sv_eq_sol);
         std::tie(m2sv_eq, mtau_m2sv_eq) = m2sv_eq_rec.get_result();
 #ifdef DEBUG
-        cout << "mtot(m2sv_eq): " << analysis::mTotal(input, m2sv_eq_sol)
-             << '\n';
+        if (!m2sv_eq_sol) {
+            cout << "-- m2sv_eq failed!\n";
+        } else {
+            cout << m2sv_eq_sol.value() << '\n';
+            cout << "mtot(m2sv_eq): " << analysis::mTotal(input, m2sv_eq_sol)
+                 << "\n\n";
+        }
 #endif
 
         // reconstruction using M2sBV(eq).
@@ -295,8 +283,15 @@ int main(int argc, char *argv[]) {
         auto m2v_eq_rec = analysis::mkM2Reconstruction(input, m2v_eq_sol);
         std::tie(m2v_eq, mtau_m2v_eq) = m2v_eq_rec.get_result();
 #ifdef DEBUG
-        cout << "mtot(m2v_eq): " << analysis::mTotal(input, m2v_eq_sol) << '\n';
+        if (!m2v_eq_sol) {
+            cout << "-- m2v_eq failed!\n";
+        } else {
+            cout << m2v_eq_sol.value() << '\n';
+            cout << "mtot(m2v_eq): " << analysis::mTotal(input, m2v_eq_sol)
+                 << '\n';
+        }
 #endif
+
         // fill the event variables.
         output->Fill();
 #ifdef DEBUG

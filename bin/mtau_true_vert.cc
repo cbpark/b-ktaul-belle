@@ -78,16 +78,16 @@ int main(int argc, char *argv[]) {
     Float_t vx_bs, vy_bs, vz_bs;
     Float_t vx_bt, vy_bt, vz_bt;
 
-    cout << "-- Use the truth-level data.\n";
+    cout << "-- Use the reco-level data.\n";
     event->SetBranchAddress("i_htaus", &i_htaus);
-    event->SetBranchAddress("tpx_ks", &px_ks);
-    event->SetBranchAddress("tpy_ks", &py_ks);
-    event->SetBranchAddress("tpz_ks", &pz_ks);
-    event->SetBranchAddress("te_ks", &e_ks);
-    event->SetBranchAddress("tpx_mus", &px_mus);
-    event->SetBranchAddress("tpy_mus", &py_mus);
-    event->SetBranchAddress("tpz_mus", &pz_mus);
-    event->SetBranchAddress("te_mus", &e_mus);
+    event->SetBranchAddress("px_ks", &px_ks);
+    event->SetBranchAddress("py_ks", &py_ks);
+    event->SetBranchAddress("pz_ks", &pz_ks);
+    event->SetBranchAddress("E_ks", &e_ks);
+    event->SetBranchAddress("px_mus", &px_mus);
+    event->SetBranchAddress("py_mus", &py_mus);
+    event->SetBranchAddress("pz_mus", &pz_mus);
+    event->SetBranchAddress("E_mus", &e_mus);
     event->SetBranchAddress("tpx_htau", &px_htaus);
     event->SetBranchAddress("tpy_htau", &py_htaus);
     event->SetBranchAddress("tpz_htau", &pz_htaus);
@@ -96,10 +96,20 @@ int main(int argc, char *argv[]) {
     event->SetBranchAddress("tpy_dt", &py_dt);
     event->SetBranchAddress("tpz_dt", &pz_dt);
     event->SetBranchAddress("te_dt", &e_dt);
-    event->SetBranchAddress("tpx_mut", &px_mut);
-    event->SetBranchAddress("tpy_mut", &py_mut);
-    event->SetBranchAddress("tpz_mut", &pz_mut);
-    event->SetBranchAddress("te_mut", &e_mut);
+    event->SetBranchAddress("px_mut", &px_mut);
+    event->SetBranchAddress("py_mut", &py_mut);
+    event->SetBranchAddress("pz_mut", &pz_mut);
+    event->SetBranchAddress("E_mut", &e_mut);
+
+    // event->SetBranchAddress("vx_ip", &vx_ip);
+    // event->SetBranchAddress("vy_ip", &vy_ip);
+    // event->SetBranchAddress("vz_ip", &vz_ip);
+    // event->SetBranchAddress("vx_bs", &vx_bs);
+    // event->SetBranchAddress("vy_bs", &vy_bs);
+    // event->SetBranchAddress("vz_bs", &vz_bs);
+    // event->SetBranchAddress("vx_bt", &vx_bt);
+    // event->SetBranchAddress("vy_bt", &vy_bt);
+    // event->SetBranchAddress("vz_bt", &vz_bt);
 
     event->SetBranchAddress("tvx_ip", &vx_ip);
     event->SetBranchAddress("tvy_ip", &vy_ip);
