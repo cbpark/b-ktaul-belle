@@ -63,6 +63,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // beam momentum.
+    Float_t m_px, m_py, m_pz, m_e;
+
     // the particle momenta from the input.
     Float_t i_htaus;
     Float_t px_ks, py_ks, pz_ks, e_ks;
@@ -79,6 +82,11 @@ int main(int argc, char *argv[]) {
     Float_t vx_bt, vy_bt, vz_bt;
 
     cout << "-- Use the reco-level data.\n";
+    event->SetBranchAddress("m_px", &m_px);
+    event->SetBranchAddress("m_py", &m_py);
+    event->SetBranchAddress("m_pz", &m_pz);
+    event->SetBranchAddress("m_e", &m_e);
+
     event->SetBranchAddress("i_htaus", &i_htaus);
     event->SetBranchAddress("px_ks", &px_ks);
     event->SetBranchAddress("py_ks", &py_ks);
@@ -92,24 +100,14 @@ int main(int argc, char *argv[]) {
     event->SetBranchAddress("tpy_htau", &py_htaus);
     event->SetBranchAddress("tpz_htau", &pz_htaus);
     event->SetBranchAddress("te_htaus", &e_htaus);
-    event->SetBranchAddress("tpx_dt", &px_dt);
-    event->SetBranchAddress("tpy_dt", &py_dt);
-    event->SetBranchAddress("tpz_dt", &pz_dt);
-    event->SetBranchAddress("te_dt", &e_dt);
+    event->SetBranchAddress("px_dt", &px_dt);
+    event->SetBranchAddress("py_dt", &py_dt);
+    event->SetBranchAddress("pz_dt", &pz_dt);
+    event->SetBranchAddress("E_dt", &e_dt);
     event->SetBranchAddress("px_mut", &px_mut);
     event->SetBranchAddress("py_mut", &py_mut);
     event->SetBranchAddress("pz_mut", &pz_mut);
     event->SetBranchAddress("E_mut", &e_mut);
-
-    // event->SetBranchAddress("vx_ip", &vx_ip);
-    // event->SetBranchAddress("vy_ip", &vy_ip);
-    // event->SetBranchAddress("vz_ip", &vz_ip);
-    // event->SetBranchAddress("vx_bs", &vx_bs);
-    // event->SetBranchAddress("vy_bs", &vy_bs);
-    // event->SetBranchAddress("vz_bs", &vz_bs);
-    // event->SetBranchAddress("vx_bt", &vx_bt);
-    // event->SetBranchAddress("vy_bt", &vy_bt);
-    // event->SetBranchAddress("vz_bt", &vz_bt);
 
     event->SetBranchAddress("tvx_ip", &vx_ip);
     event->SetBranchAddress("tvy_ip", &vy_ip);
@@ -142,6 +140,7 @@ int main(int argc, char *argv[]) {
     output->Branch("m2v_eq", &m2v_eq, "m2v_eq/D");
     output->Branch("mtau_m2v_eq", &mtau_m2v_eq, "mtau_m2v_eq/D");
 
+    LorentzVector beams;
     LorentzVector k_sig, mu_sig, htau_sig;
     LorentzVector d_tag, mu_tag;
     Vector3 v_ip, v_bs, v_bt;
@@ -200,13 +199,17 @@ int main(int argc, char *argv[]) {
 
         auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
                                        {}, {v_ip}, {v_bs}, {v_bt});
-        input.set_sqrt_s(SQRTS);
-        input.set_pz_tot(PZTOT);
+        beams = LorentzVector(m_px, m_py, m_pz, m_e);
+        input.set_sqrt_s(beams.M());
+        input.set_pz_tot(beams.Pz());
 
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
              << "vis_tag: " << input.vis_tag() << '\n'
-             << "ptmiss: " << input.ptmiss() << "\n\n";
+             << "ptmiss: " << input.ptmiss() << '\n';
+
+        cout << "sqrt_s: " << beams.M() << '\n';
+        cout << "pz_tot: " << beams.Pz() << '\n';
 
         // cout << "---\n";
         // cout << "let vis1 = FourMomentum::new" << input.vis_sig() << ";\n";
