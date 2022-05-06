@@ -18,6 +18,8 @@ using Vector2F = ROOT::Math::XYVectorF;
 namespace analysis {
 class Input {
 private:
+    double sqrt_s_ = SQRTS;
+    double pz_tot_ = PLONG;
     /// Four-momentum of K_sig.
     LorentzVector k_sig_;
     /// Four-momentum of mu_sig.
@@ -29,8 +31,6 @@ private:
     /// Four-Momentum of mu_tag.
     LorentzVector mu_tag_;
 
-    double sqrt_s_;
-
     /// missing transverse momentum.
     Vector2 ptmiss_;
 
@@ -40,14 +40,13 @@ private:
     // ptmiss is calculated by using visible particles.
     Input(const LorentzVector &k_sig, const LorentzVector &mu_sig,
           const LorentzVector &htau_sig, const LorentzVector &d_tag,
-          const LorentzVector &mu_tag, const double sqrt_s,
-          const Vector3 &vertex_bsig, const Vector3 &vertex_btag)
+          const LorentzVector &mu_tag, const Vector3 &vertex_bsig,
+          const Vector3 &vertex_btag)
         : k_sig_(k_sig),
           mu_sig_(mu_sig),
           htau_sig_(htau_sig),
           d_tag_(d_tag),
           mu_tag_(mu_tag),
-          sqrt_s_(sqrt_s),
           vertex_bsig_(vertex_bsig),
           vertex_btag_(vertex_btag) {
         LorentzVector pvis_tot = k_sig + mu_sig + htau_sig + d_tag + mu_tag;
@@ -57,15 +56,13 @@ private:
     // ptmiss is an input.
     Input(const LorentzVector &k_sig, const LorentzVector &mu_sig,
           const LorentzVector &htau_sig, const LorentzVector &d_tag,
-          const LorentzVector &mu_tag, const double sqrt_s,
-          const Vector2 &ptmiss, const Vector3 &vertex_bsig,
-          const Vector3 &vertex_btag)
+          const LorentzVector &mu_tag, const Vector2 &ptmiss,
+          const Vector3 &vertex_bsig, const Vector3 &vertex_btag)
         : k_sig_(k_sig),
           mu_sig_(mu_sig),
           htau_sig_(htau_sig),
           d_tag_(d_tag),
           mu_tag_(mu_tag),
-          sqrt_s_(sqrt_s),
           ptmiss_(ptmiss),
           vertex_bsig_(vertex_bsig),
           vertex_btag_(vertex_btag) {}
@@ -80,6 +77,10 @@ public:
     LorentzVector mu_tag() const { return mu_tag_; }
 
     double sqrt_s() const { return sqrt_s_; }
+    void set_sqrt_s(double sqrt_s) { sqrt_s_ = sqrt_s; }
+
+    double pz_tot() const { return pz_tot_; }
+    void set_pz_tot(double pz_tot) { pz_tot_ = pz_tot; }
 
     // the energy of B meson at CM frame.
     double eb_cm() const { return 0.5 * sqrt_s_; }
@@ -98,7 +99,7 @@ public:
     Vector3 vertex_btag() const { return vertex_btag_; }
 
     std::optional<yam2::InputKinematics> to_input_kinematics(
-        double m_invisible, double pz_tot) const;
+        double m_invisible) const;
 
     std::optional<yam2::InputKinematicsWithVertex>
     to_input_kinematics_with_vertex(
@@ -109,7 +110,7 @@ public:
                          const LorentzVector &mu_sig,
                          const LorentzVector &htau_sig,
                          const LorentzVector &d_tag,
-                         const LorentzVector &mu_tag, const double sqrt_s,
+                         const LorentzVector &mu_tag,
                          const std::optional<Vector2> &ptmiss,
                          const std::optional<Vector3> &ip_lab,
                          const std::optional<Vector3> &vertex_bsig_lab,
@@ -118,7 +119,7 @@ public:
 
 Input mkInput(const LorentzVector &k_sig, const LorentzVector &mu_sig,
               const LorentzVector &htau_sig, const LorentzVector &d_tag,
-              const LorentzVector &mu_tag, const double sqrt_s,
+              const LorentzVector &mu_tag,
               const std::optional<Vector2> &ptmiss = {},
               const std::optional<Vector3> &ip_lab = {},
               const std::optional<Vector3> &vertex_bsig_lab = {},

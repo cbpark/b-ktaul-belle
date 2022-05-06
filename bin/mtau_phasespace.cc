@@ -116,15 +116,17 @@ int main(int, char *argv[]) {
             {mu_sig->Px(), mu_sig->Py(), mu_sig->Pz(), mu_sig->E()},
             {htaus_sig->Px(), htaus_sig->Py(), htaus_sig->Pz(), htaus_sig->E()},
             {d_tag->Px(), d_tag->Py(), d_tag->Pz(), d_tag->E()},
-            {mu_tag->Px(), mu_tag->Py(), mu_tag->Pz(), mu_tag->E()}, SQRTS, {},
+            {mu_tag->Px(), mu_tag->Py(), mu_tag->Pz(), mu_tag->E()}, {},
             {{0.0, 0.0, 0.0}}, {{b_sig->Px(), b_sig->Py(), b_sig->Pz()}},
             {{b_tag->Px(), b_tag->Py(), b_tag->Pz()}});
+        input.set_sqrt_s(SQRTS);
+        input.set_pz_tot(PZTOT);
 
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);
 
         // the input for calculating M2 variables (no vertex info).
-        auto input_kinematics = input.to_input_kinematics(MINVISIBLE, PZTOT);
+        auto input_kinematics = input.to_input_kinematics(MINVISIBLE);
 
 #ifdef DEBUG
         cout << "input kinematics:\n" << input_kinematics.value() << "\n\n";
@@ -146,7 +148,7 @@ int main(int, char *argv[]) {
         std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
 
         auto input_kinematics_with_vertex =
-            input.to_input_kinematics_with_vertex(input_kinematics, PZTOT);
+            input.to_input_kinematics_with_vertex(input_kinematics, 0.0);
 
         // reconstruction using M2sV(eq).
         auto m2sv_eq_sol =

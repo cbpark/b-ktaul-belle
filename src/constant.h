@@ -19,7 +19,7 @@ constexpr double MD = 1.864;
 
 constexpr double MTAU = 1.777;
 
-// constexpr double SQRTS = 10.583;
+constexpr double SQRTS = 10.583;
 
 /// the energy of B meson at CM frame.
 // constexpr double EBCM = 0.5 * SQRTS;

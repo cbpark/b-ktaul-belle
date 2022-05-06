@@ -19,19 +19,15 @@ yam2::SpatialMomentum fromVector3(const Vector3 &p3) {
 }
 
 std::optional<yam2::InputKinematics> Input::to_input_kinematics(
-    double m_invisible, double pz_tot) const {
+    double m_invisible) const {
     auto p1 = fromLorentzVector(this->vis_sig());
     auto p2 = fromLorentzVector(this->vis_tag());
-
-    // we have only one-step decay, so it's necessary to fake the second step.
-    auto zero = yam2::FourMomentum();
 
     auto ptmiss = fromVector2(this->ptmiss());
     yam2::Mass m_parent{MB};
 
-    return yam2::mkInput({p1, p2}, {zero, zero}, ptmiss,
-                         yam2::Mass{m_invisible}, m_parent, {}, this->sqrt_s(),
-                         {pz_tot});
+    return yam2::mkInput(p1, p2, ptmiss, yam2::Mass{m_invisible}, m_parent,
+                         sqrt_s_, {pz_tot_});
 }
 
 std::optional<yam2::InputKinematicsWithVertex>
@@ -47,8 +43,7 @@ Input::to_input_kinematics_with_vertex(
 
 Input mkInput(const LorentzVector &k_sig, const LorentzVector &mu_sig,
               const LorentzVector &htau_sig, const LorentzVector &d_tag,
-              const LorentzVector &mu_tag, const double sqrt_s,
-              const std::optional<Vector2> &ptmiss,
+              const LorentzVector &mu_tag, const std::optional<Vector2> &ptmiss,
               const std::optional<Vector3> &ip_lab,
               const std::optional<Vector3> &vertex_bsig_lab,
               const std::optional<Vector3> &vertex_btag_lab) {
@@ -60,11 +55,11 @@ Input mkInput(const LorentzVector &k_sig, const LorentzVector &mu_sig,
     }
 
     if (!ptmiss) {
-        return {k_sig,  mu_sig, htau_sig,    d_tag,
-                mu_tag, sqrt_s, vertex_bsig, vertex_btag};
+        return {k_sig,  mu_sig,      htau_sig,   d_tag,
+                mu_tag, vertex_bsig, vertex_btag};
     } else {
-        return {k_sig,  mu_sig,         htau_sig,    d_tag,      mu_tag,
-                sqrt_s, ptmiss.value(), vertex_bsig, vertex_btag};
+        return {k_sig,  mu_sig,         htau_sig,    d_tag,
+                mu_tag, ptmiss.value(), vertex_bsig, vertex_btag};
     }
 }
 }  // namespace analysis

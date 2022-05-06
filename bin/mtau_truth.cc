@@ -189,7 +189,9 @@ int main(int argc, char *argv[]) {
         v_bt = Vector3(vx_bt, vy_bt, vz_bt);
 
         auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
-                                       SQRTS, {}, {v_ip}, {v_bs}, {v_bt});
+                                       {}, {v_ip}, {v_bs}, {v_bt});
+        input.set_sqrt_s(SQRTS);
+        input.set_pz_tot(PZTOT);
 
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
@@ -209,7 +211,7 @@ int main(int argc, char *argv[]) {
         mtau_random = analysis::mRecoilRandom(input, rnd);
 
         // the input for calculating M2 variables (no vertex info).
-        auto input_kinematics = input.to_input_kinematics(MINVISIBLE, PZTOT);
+        auto input_kinematics = input.to_input_kinematics(MINVISIBLE);
 
 #ifdef DEBUG
         // cout << "input kinematics:\n" << input_kinematics.value() << "\n\n";
@@ -235,7 +237,7 @@ int main(int argc, char *argv[]) {
         std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
 
         auto input_kinematics_with_vertex =
-            input.to_input_kinematics_with_vertex(input_kinematics, PZTOT);
+            input.to_input_kinematics_with_vertex(input_kinematics, 0.0);
 #ifdef DEBUG
         cout << "\ninput kinematics (with vertex):\n"
              << input_kinematics_with_vertex.value() << "\n\n";
