@@ -3,7 +3,13 @@ CXXFLAGS := -g -O2 -Wall -Wextra -std=c++17 -pedantic -I$(SRCDIR) $(CXXFLAGS)
 LIBS     := -lm
 RM       := rm -f
 
-EXE      := bin/mtau bin/mtau_true_vert bin/mtau_truth bin/mtau_phasespace
+EXE      := bin/mtau \
+	bin/mtau_minv_approx \
+	bin/mtau_true_vert \
+	bin/mtau_truth \
+	bin/mtau_truth_minv_true \
+	bin/mtau_truth_minv_approx \
+	bin/mtau_phasespace
 
 LIBSRC   := $(wildcard $(SRCDIR)/*.cc)
 LIBOBJ   := $(LIBSRC:.cc=.o)

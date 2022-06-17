@@ -12,24 +12,21 @@
 
 using std::cout;
 
-const double MINVISIBLE = 0.0;
 // const double PZTOT = 0.0;
 const double PZTOT = analysis::PLONG;
 
 const double SQRTS = 10.583;
 
-const double EPSILON = 1.0e-8;
+const double EPSILON = 1.0e-6;
 const unsigned int NEVAL = 2000;
 
 int main(int argc, char *argv[]) {
-    if (!(argc == 5)) {
+    if (!(argc == 4)) {
         std::cerr
-            << "usage: ./bin/mtau <event.root> <output.root> <tau_decay_mode> "
-               "<sigma_vz_ip>\n"
+            << "usage: ./bin/mtau <event.root> <output.root> <tau_decay_mode>\n"
             << "  <event.root>: input root file (required).\n"
             << "  <output.root>: output file to store the result (required).\n"
-            << "  <tau_decay_mode>: 0 (all) 1 (hadronic) 2 (leptonic)\n"
-            << "  <sigma_vz_ip>: sigma(IP{z})\n";
+            << "  <tau_decay_mode>: 0 (all) 1 (hadronic) 2 (leptonic)\n";
         return 1;
     }
 
@@ -65,10 +62,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // sigma(IP_{z})
-    double sigma_vz_ip = std::atof(argv[4]);
-    cout << "-- sigma(IP_z): " << sigma_vz_ip << '\n';
-
     // beam momentum.
     Float_t m_px, m_py, m_pz, m_e;
 
@@ -87,33 +80,33 @@ int main(int argc, char *argv[]) {
     Float_t vx_bs, vy_bs, vz_bs;
     Float_t vx_bt, vy_bt, vz_bt;
 
-    cout << "-- Use the reco-level data.\n";
+    cout << "-- Use the truth-level data.\n";
     event->SetBranchAddress("m_px", &m_px);
     event->SetBranchAddress("m_py", &m_py);
     event->SetBranchAddress("m_pz", &m_pz);
     event->SetBranchAddress("m_e", &m_e);
 
     event->SetBranchAddress("i_htaus", &i_htaus);
-    event->SetBranchAddress("px_ks", &px_ks);
-    event->SetBranchAddress("py_ks", &py_ks);
-    event->SetBranchAddress("pz_ks", &pz_ks);
-    event->SetBranchAddress("E_ks", &e_ks);
-    event->SetBranchAddress("px_mus", &px_mus);
-    event->SetBranchAddress("py_mus", &py_mus);
-    event->SetBranchAddress("pz_mus", &pz_mus);
-    event->SetBranchAddress("E_mus", &e_mus);
+    event->SetBranchAddress("tpx_ks", &px_ks);
+    event->SetBranchAddress("tpy_ks", &py_ks);
+    event->SetBranchAddress("tpz_ks", &pz_ks);
+    event->SetBranchAddress("te_ks", &e_ks);
+    event->SetBranchAddress("tpx_mus", &px_mus);
+    event->SetBranchAddress("tpy_mus", &py_mus);
+    event->SetBranchAddress("tpz_mus", &pz_mus);
+    event->SetBranchAddress("te_mus", &e_mus);
     event->SetBranchAddress("tpx_htau", &px_htaus);
     event->SetBranchAddress("tpy_htau", &py_htaus);
     event->SetBranchAddress("tpz_htau", &pz_htaus);
     event->SetBranchAddress("te_htaus", &e_htaus);
-    event->SetBranchAddress("px_dt", &px_dt);
-    event->SetBranchAddress("py_dt", &py_dt);
-    event->SetBranchAddress("pz_dt", &pz_dt);
-    event->SetBranchAddress("E_dt", &e_dt);
-    event->SetBranchAddress("px_mut", &px_mut);
-    event->SetBranchAddress("py_mut", &py_mut);
-    event->SetBranchAddress("pz_mut", &pz_mut);
-    event->SetBranchAddress("E_mut", &e_mut);
+    event->SetBranchAddress("tpx_dt", &px_dt);
+    event->SetBranchAddress("tpy_dt", &py_dt);
+    event->SetBranchAddress("tpz_dt", &pz_dt);
+    event->SetBranchAddress("te_dt", &e_dt);
+    event->SetBranchAddress("tpx_mut", &px_mut);
+    event->SetBranchAddress("tpy_mut", &py_mut);
+    event->SetBranchAddress("tpz_mut", &pz_mut);
+    event->SetBranchAddress("te_mut", &e_mut);
 
     event->SetBranchAddress("tvx_ip", &vx_ip);
     event->SetBranchAddress("tvy_ip", &vy_ip);
@@ -136,7 +129,6 @@ int main(int argc, char *argv[]) {
     Double_t m2v_eq, mtau_m2v_eq;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
-    output->Branch("i_htaus", &i_htaus, "i_htaus/I");
     output->Branch("mtau_random", &mtau_random, "mtau_random/D");
     output->Branch("m2s", &m2s, "m2s/D");
     output->Branch("mtau_m2s", &mtau_m2s, "mtau_m2s/D");
@@ -151,20 +143,15 @@ int main(int argc, char *argv[]) {
     LorentzVector k_sig, mu_sig, htau_sig;
     LorentzVector d_tag, mu_tag;
     Vector3 v_ip, v_bs, v_bt;
-    const double m_invisible1 = 0.0, m_invisible2 = 0.0;
+    double m_invisible1, m_invisible2 = 0.0;
 
     // the random number generator for mtau_random.
     auto rnd = std::make_shared<TRandom3>();
     rnd->SetSeed(42);
 
-    // the random number generator for IP(z).
-    auto ip_smearing = std::make_shared<TRandom3>();
-    ip_smearing->SetSeed(43);
-
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
     unsigned int n_tau_decay_mode = 0;
-
 #ifndef DEBUG
     // --------------------------------------------------------------------------
     // event loop
@@ -206,24 +193,25 @@ int main(int argc, char *argv[]) {
         d_tag = LorentzVector(px_dt, py_dt, pz_dt, e_dt);
         mu_tag = LorentzVector(px_mut, py_mut, pz_mut, e_mut);
 
-#ifdef DEBUG
-        cout << "\nvz_ip (before smearing): " << vz_ip << '\n';
-#endif
-        vz_ip = ip_smearing->Gaus(vz_ip, sigma_vz_ip);
-#ifdef DEBUG
-        cout << "vz_ip (after smearing): " << vz_ip << '\n';
-#endif
-
         v_ip = Vector3(vx_ip, vy_ip, vz_ip);
         v_bs = Vector3(vx_bs, vy_bs, vz_bs);
         v_bt = Vector3(vx_bt, vy_bt, vz_bt);
 
         auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
                                        {}, {v_ip}, {v_bs}, {v_bt});
+
         beams = LorentzVector(m_px, m_py, m_pz, m_e);
         input.set_sqrt_s(beams.M());
         input.set_pz_tot(beams.Pz());
 
+        if (id_tau_daughter == 11 || id_tau_daughter == 13) {
+            m_invisible1 = analysis::mNuNu(input, beams);
+#ifdef DEBUG
+            cout << "M(nunu)^approx: " << m_invisible1 << '\n';
+#endif
+        } else {
+            m_invisible1 = 0.0;
+        }
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
              << "vis_tag: " << input.vis_tag() << '\n'
@@ -253,12 +241,12 @@ int main(int argc, char *argv[]) {
 #endif
 
         // reconstruction using M2s.
-        auto m2s_sol = yam2::m2Cons(input_kinematics, 1.0e-6, NEVAL);
+        auto m2s_sol = yam2::m2Cons(input_kinematics, EPSILON, NEVAL);
         auto m2s_rec = analysis::mkM2Reconstruction(input, m2s_sol);
         std::tie(m2s, mtau_m2s) = m2s_rec.get_result();
 
         // reconstruction using M2sB.
-        auto m2sb_sol = yam2::m2CCons(input_kinematics, 1.0e-6, NEVAL);
+        auto m2sb_sol = yam2::m2CCons(input_kinematics, EPSILON, NEVAL);
         // input_kinematics.value().set_eps_constraint(1.0e-2);
         // auto m2sb_sol = yam2::m2CConsIneq(input_kinematics, EPSILON, NEVAL);
 #ifdef DEBUG
@@ -270,6 +258,9 @@ int main(int argc, char *argv[]) {
 #endif
         auto m2sb_rec = analysis::mkM2Reconstruction(input, m2sb_sol);
         std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
+#ifdef DEBUG
+        std::cout << "\n-- mtau(m2sb): " << mtau_m2sb << '\n';
+#endif
 
         auto input_kinematics_with_vertex =
             input.to_input_kinematics_with_vertex(input_kinematics, 0.0);

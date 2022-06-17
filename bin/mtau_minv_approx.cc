@@ -151,11 +151,13 @@ int main(int argc, char *argv[]) {
     LorentzVector k_sig, mu_sig, htau_sig;
     LorentzVector d_tag, mu_tag;
     Vector3 v_ip, v_bs, v_bt;
-    const double m_invisible1 = 0.0, m_invisible2 = 0.0;
+    double m_invisible1, m_invisible2 = 0.0;
 
     // the random number generator for mtau_random.
     auto rnd = std::make_shared<TRandom3>();
+#ifdef DEBUG
     rnd->SetSeed(42);
+#endif
 
     // the random number generator for IP(z).
     auto ip_smearing = std::make_shared<TRandom3>();
@@ -224,6 +226,11 @@ int main(int argc, char *argv[]) {
         input.set_sqrt_s(beams.M());
         input.set_pz_tot(beams.Pz());
 
+        if (id_tau_daughter == 11 || id_tau_daughter == 13) {
+            m_invisible1 = analysis::mNuNu(input, beams);
+        } else {
+            m_invisible1 = 0.0;
+        }
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
              << "vis_tag: " << input.vis_tag() << '\n'

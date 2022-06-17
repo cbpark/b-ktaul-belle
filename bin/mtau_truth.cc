@@ -12,14 +12,13 @@
 
 using std::cout;
 
-const double MINVISIBLE = 0.0;
 // const double PZTOT = 0.0;
 const double PZTOT = analysis::PLONG;
 
 const double SQRTS = 10.583;
 
-const double EPSILON = 1.0e-8;
-const unsigned int NEVAL = 1000;
+const double EPSILON = 1.0e-6;
+const unsigned int NEVAL = 2000;
 
 int main(int argc, char *argv[]) {
     if (!(argc == 4)) {
@@ -144,6 +143,7 @@ int main(int argc, char *argv[]) {
     LorentzVector k_sig, mu_sig, htau_sig;
     LorentzVector d_tag, mu_tag;
     Vector3 v_ip, v_bs, v_bt;
+    double m_invisible1, m_invisible2 = 0.0;
 
     // the random number generator for mtau_random.
     auto rnd = std::make_shared<TRandom3>();
@@ -169,8 +169,8 @@ int main(int argc, char *argv[]) {
         event->GetEntry(iev);
         // event->Show(iev);
 
+        int id_tau_daughter = std::abs(i_htaus);
         if (tau_decay_mode != 0) {
-            int id_tau_daughter = std::abs(i_htaus);
             if (id_tau_daughter == 211 || id_tau_daughter == 213 ||
                 id_tau_daughter == 321) {
                 if (tau_decay_mode != 1) { continue; }
@@ -204,6 +204,12 @@ int main(int argc, char *argv[]) {
         input.set_sqrt_s(beams.M());
         input.set_pz_tot(beams.Pz());
 
+        // if (id_tau_daughter == 11 || id_tau_daughter == 13) {
+        //     m_invisible1 = analysis::mNuNu(input);
+        // } else {
+        //     m_invisible1 = 0.0;
+        // }
+        m_invisible1 = 0.0;
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'
              << "vis_tag: " << input.vis_tag() << '\n'
@@ -225,7 +231,8 @@ int main(int argc, char *argv[]) {
         mtau_random = analysis::mRecoilRandom(input, rnd);
 
         // the input for calculating M2 variables (no vertex info).
-        auto input_kinematics = input.to_input_kinematics(MINVISIBLE);
+        auto input_kinematics =
+            input.to_input_kinematics(m_invisible1, m_invisible2);
 
 #ifdef DEBUG
         // cout << "input kinematics:\n" << input_kinematics.value() << "\n\n";
@@ -249,6 +256,9 @@ int main(int argc, char *argv[]) {
 #endif
         auto m2sb_rec = analysis::mkM2Reconstruction(input, m2sb_sol);
         std::tie(m2sb, mtau_m2sb) = m2sb_rec.get_result();
+#ifdef DEBUG
+        std::cout << "\n-- mtau(m2sb): " << mtau_m2sb << '\n';
+#endif
 
         auto input_kinematics_with_vertex =
             input.to_input_kinematics_with_vertex(input_kinematics, 0.0);

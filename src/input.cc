@@ -19,15 +19,16 @@ yam2::SpatialMomentum fromVector3(const Vector3 &p3) {
 }
 
 std::optional<yam2::InputKinematics> Input::to_input_kinematics(
-    double m_invisible) const {
+    double m_invisible1, double m_invisible2) const {
     auto p1 = fromLorentzVector(this->vis_sig());
     auto p2 = fromLorentzVector(this->vis_tag());
 
     auto ptmiss = fromVector2(this->ptmiss());
     yam2::Mass m_parent{MB};
 
-    return yam2::mkInput(p1, p2, ptmiss, yam2::Mass{m_invisible}, m_parent,
-                         sqrt_s_, {pz_tot_});
+    return yam2::mkInput(p1, p2, ptmiss, yam2::Mass{m_invisible1},
+                         yam2::Mass{m_invisible2}, m_parent, m_parent, sqrt_s_,
+                         {pz_tot_});
 }
 
 std::optional<yam2::InputKinematicsWithVertex>

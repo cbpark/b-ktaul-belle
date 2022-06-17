@@ -34,6 +34,10 @@ public:
 M2Reconstruction mkM2Reconstruction(
     const Input &input, const std::optional<yam2::M2Solution> &m2sol);
 
+double mNuNu(const Input &input, const LorentzVector& beams);
+
+double mNuNuTrue(const Input &input, const LorentzVector& bs);
+
 double mRecoilRandom(const Input &input, std::shared_ptr<TRandom3> rnd);
 
 double mTotal(const Input &input, const std::optional<yam2::M2Solution> &m2sol);

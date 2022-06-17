@@ -126,7 +126,8 @@ int main(int, char *argv[]) {
         mtau_random = analysis::mRecoilRandom(input, rnd);
 
         // the input for calculating M2 variables (no vertex info).
-        auto input_kinematics = input.to_input_kinematics(MINVISIBLE);
+        auto input_kinematics =
+            input.to_input_kinematics(MINVISIBLE, MINVISIBLE);
 
 #ifdef DEBUG
         cout << "input kinematics:\n" << input_kinematics.value() << "\n\n";

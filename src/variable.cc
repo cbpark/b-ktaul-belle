@@ -67,10 +67,29 @@ M2Reconstruction mkM2Reconstruction(
     return {m2sol_.m2(), mtau};
 }
 
+double mNuNu(const Input &input, const LorentzVector &beams) {
+    ROOT::Math::XYZTVector b_rest(0.0, 0.0, 0.0, MB);
+    auto boost_to_lab = ROOT::Math::Boost(
+        beams.Px() / beams.E(), beams.Py() / beams.E(), beams.Pz() / beams.E());
+    LorentzVector b_lab = boost_to_lab(b_rest);
+
+    auto nunu_approx = b_lab - input.vis_sig();
+    double m_nunu = nunu_approx.M();
+    // return m_nunu < 0.0 ? 0.0 : m_nunu;
+    return m_nunu < 0.0 ? -m_nunu : m_nunu;
+}
+
+double mNuNuTrue(const Input &input, const LorentzVector &bs) {
+    auto nunu_true = bs - input.vis_sig();
+    double m_nunu = nunu_true.M();
+    return m_nunu < 0.0 ? 0.0 : m_nunu;
+}
+
 double mRecoilRandom(const Input &input, std::shared_ptr<TRandom3> rnd) {
     double cos_theta = rnd->Uniform(-1.0, 1.0);
     return mRecoil(input, cos_theta);
 }
+
 double mTotal(const Input &input,
               const std::optional<yam2::M2Solution> &m2sol) {
     if (!m2sol) { return -1.0; }

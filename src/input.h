@@ -99,7 +99,7 @@ public:
     Vector3 vertex_btag() const { return vertex_btag_; }
 
     std::optional<yam2::InputKinematics> to_input_kinematics(
-        double m_invisible) const;
+        double m_invisible1, double m_invisible2) const;
 
     std::optional<yam2::InputKinematicsWithVertex>
     to_input_kinematics_with_vertex(

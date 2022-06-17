@@ -112,12 +112,12 @@ int main(int argc, char *argv[]) {
     event->SetBranchAddress("tvx_ip", &vx_ip);
     event->SetBranchAddress("tvy_ip", &vy_ip);
     event->SetBranchAddress("tvz_ip", &vz_ip);
-    event->SetBranchAddress("tvx_bs", &vx_bs);
-    event->SetBranchAddress("tvy_bs", &vy_bs);
-    event->SetBranchAddress("tvz_bs", &vz_bs);
-    event->SetBranchAddress("tvx_bt", &vx_bt);
-    event->SetBranchAddress("tvy_bt", &vy_bt);
-    event->SetBranchAddress("tvz_bt", &vz_bt);
+    event->SetBranchAddress("vx_bs", &vx_bs);
+    event->SetBranchAddress("vy_bs", &vy_bs);
+    event->SetBranchAddress("vz_bs", &vz_bs);
+    event->SetBranchAddress("vx_bt", &vx_bt);
+    event->SetBranchAddress("vy_bt", &vy_bt);
+    event->SetBranchAddress("vz_bt", &vz_bt);
 
     TFile outfile{argv[2], "recreate"};
     cout << "-- The result will be stored in " << outfile.GetName() << '\n';
@@ -224,7 +224,8 @@ int main(int argc, char *argv[]) {
         mtau_random = analysis::mRecoilRandom(input, rnd);
 
         // the input for calculating M2 variables (no vertex info).
-        auto input_kinematics = input.to_input_kinematics(MINVISIBLE);
+        auto input_kinematics =
+            input.to_input_kinematics(MINVISIBLE, MINVISIBLE);
 
 #ifdef DEBUG
         // cout << "input kinematics:\n" << input_kinematics.value() << "\n\n";

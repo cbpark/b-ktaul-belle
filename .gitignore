@@ -10,4 +10,7 @@ bin/mtau
 bin/mtau_true_vert
 bin/mtau_truth
 bin/mtau_phasespace
+bin/mtau_minv_approx
+bin/mtau_truth_minv_approx
+bin/mtau_truth_minv_true
 gen/gen_sig_bb
