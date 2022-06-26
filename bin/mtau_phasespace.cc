@@ -68,6 +68,7 @@ int main(int, char *argv[]) {
     TLorentzVector em{0.0, 0.0, analysis::EEM, analysis::EEM};
     TLorentzVector ep{0.0, 0.0, -analysis::EEP, analysis::EEP};
     TLorentzVector s = em + ep;
+    LorentzVector sqrt_s{s.Px(), s.Py(), s.Pz(), s.E()};
 
     // gRandom = new TRandom3(42);
 
@@ -119,8 +120,6 @@ int main(int, char *argv[]) {
             {mu_tag->Px(), mu_tag->Py(), mu_tag->Pz(), mu_tag->E()}, {},
             {{0.0, 0.0, 0.0}}, {{b_sig->Px(), b_sig->Py(), b_sig->Pz()}},
             {{b_tag->Px(), b_tag->Py(), b_tag->Pz()}});
-        input.set_sqrt_s(SQRTS);
-        input.set_pz_tot(PZTOT);
 
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);

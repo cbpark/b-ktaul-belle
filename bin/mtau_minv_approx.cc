@@ -222,12 +222,14 @@ int main(int argc, char *argv[]) {
 
         auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
                                        {}, {v_ip}, {v_bs}, {v_bt});
-        beams = LorentzVector(m_px, m_py, m_pz, m_e);
-        input.set_sqrt_s(beams.M());
-        input.set_pz_tot(beams.Pz());
+        // beams = LorentzVector(m_px, m_py, m_pz, m_e);
+        // input.set_sqrt_s(beams);
 
         if (id_tau_daughter == 11 || id_tau_daughter == 13) {
-            m_invisible1 = analysis::mNuNu(input, beams);
+            m_invisible1 = analysis::mNuNu(input);
+#ifdef DEBUG
+            cout << "m_invisible1: " << m_invisible1 << '\n';
+#endif
         } else {
             m_invisible1 = 0.0;
         }

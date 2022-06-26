@@ -18,8 +18,9 @@ using Vector2F = ROOT::Math::XYVectorF;
 namespace analysis {
 class Input {
 private:
-    double sqrt_s_ = SQRTS;
-    double pz_tot_ = PLONG;
+    /// sqrt(s) of the collision system.
+    /// it'll be updated by retrieving the values in the ntuple.
+    LorentzVector sqrt_s_ = LorentzVector(0.0, 0.0, PLONG, EBEAMS);
     /// Four-momentum of K_sig.
     LorentzVector k_sig_;
     /// Four-momentum of mu_sig.
@@ -76,17 +77,16 @@ public:
     LorentzVector d_tag() const { return d_tag_; }
     LorentzVector mu_tag() const { return mu_tag_; }
 
-    double sqrt_s() const { return sqrt_s_; }
-    void set_sqrt_s(double sqrt_s) { sqrt_s_ = sqrt_s; }
-
-    double pz_tot() const { return pz_tot_; }
-    void set_pz_tot(double pz_tot) { pz_tot_ = pz_tot; }
+    LorentzVector sqrt_s() const { return sqrt_s_; }
+    void set_sqrt_s(const LorentzVector &sqrt_s) { sqrt_s_ = sqrt_s; }
 
     // the energy of B meson at CM frame.
-    double eb_cm() const { return 0.5 * sqrt_s_; }
+    double eb_cm() const { return 0.5 * sqrt_s_.M(); }
 
     // |p| of B mesons at CM frame.
-    double pb_cm() const { return std::sqrt(0.25 * sqrt_s_ * sqrt_s_ - MBSQ); }
+    double pb_cm() const { return std::sqrt(0.25 * sqrt_s_.M2() - MBSQ); }
+
+    auto boost_to_cm() const { return ROOT::Math::Boost(sqrt_s_.BoostToCM()); }
 
     Vector2 ptmiss() const { return ptmiss_; }
 

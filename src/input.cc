@@ -27,8 +27,8 @@ std::optional<yam2::InputKinematics> Input::to_input_kinematics(
     yam2::Mass m_parent{MB};
 
     return yam2::mkInput(p1, p2, ptmiss, yam2::Mass{m_invisible1},
-                         yam2::Mass{m_invisible2}, m_parent, m_parent, sqrt_s_,
-                         {pz_tot_});
+                         yam2::Mass{m_invisible2}, m_parent, m_parent,
+                         sqrt_s_.M(), {sqrt_s_.Pz()});
 }
 
 std::optional<yam2::InputKinematicsWithVertex>

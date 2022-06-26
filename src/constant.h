@@ -37,11 +37,11 @@ inline auto boostToCM() {
     return ROOT::Math::Boost(sqrt_s.BoostToCM());
 }
 
-inline ROOT::Math::XYZTVector bRest() {
-    ROOT::Math::XYZTVector b_rest(0.0, 0.0, 0.0, MB);
-    auto boost_to_lab = ROOT::Math::Boost(0.0, 0.0, PLONG / EBEAMS);
-    return boost_to_lab(b_rest);
-}
+// inline ROOT::Math::XYZTVector bRest() {
+//     ROOT::Math::XYZTVector b_rest(0.0, 0.0, 0.0, MB);
+//     auto boost_to_lab = ROOT::Math::Boost(0.0, 0.0, PLONG / EBEAMS);
+//     return boost_to_lab(b_rest);
+// }
 
 // inline auto CM() { return ROOT::Math::XYZTVector(0.0, 0.0, 0.0, SQRTS); }
 }  // namespace analysis
