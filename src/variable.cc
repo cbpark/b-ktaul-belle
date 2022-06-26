@@ -14,8 +14,8 @@ using Vector3 = ROOT::Math::XYZVector;
 namespace analysis {
 double mRecoil(const Input &input, double cos_theta) {
     auto kl_sig = input.k_sig() + input.mu_sig();
-    // kl_sig = input.boost_to_cm()(kl_sig);
     kl_sig = boostToCM()(kl_sig);
+    // kl_sig = input.boost_to_cm()(kl_sig);
     double m_kl_sq = kl_sig.mass2();
     double e_kl = kl_sig.e();
     double p_kl = kl_sig.P();
@@ -58,11 +58,11 @@ M2Reconstruction mkM2Reconstruction(
     LorentzVector k2sol_{k2sol.px(), k2sol.py(), k2sol.pz(), k2sol.e()};
     // reconstructed B_tag using the M2 solution.
     auto p_b_tag = input.vis_tag() + k2sol_;
-    // p_b_tag = input.boost_to_cm()(p_b_tag);
     p_b_tag = boostToCM()(p_b_tag);
+    // p_b_tag = input.boost_to_cm()(p_b_tag);
     auto kl_sig = input.kl_sig();
-    // kl_sig = input.boost_to_cm()(kl_sig);
     kl_sig = boostToCM()(kl_sig);
+    // kl_sig = input.boost_to_cm()(kl_sig);
 
     double cos_theta = getCosTheta(p_b_tag, kl_sig);
     double mtau = mRecoil(input, cos_theta);
@@ -72,10 +72,10 @@ M2Reconstruction mkM2Reconstruction(
 
 double mNuNu(const Input &input) {
     ROOT::Math::XYZTVector b_rest(0.0, 0.0, 0.0, MB);
-    // auto boost_to_lab = ROOT::Math::Boost(
-    //     beams.Px() / beams.E(), beams.Py() / beams.E(), beams.Pz() /
-    //     beams.E());
-    auto boost_to_lab = ROOT::Math::Boost(0.0, 0.0, PLONG / EBEAMS);
+    // auto boost_to_lab = ROOT::Math::Boost(0.0, 0.0, PLONG / EBEAMS);
+    auto beams = input.sqrt_s();
+    auto boost_to_lab = ROOT::Math::Boost(
+        beams.Px() / beams.E(), beams.Py() / beams.E(), beams.Pz() / beams.E());
     LorentzVector b_lab = boost_to_lab(b_rest);
 
     auto nunu_approx = b_lab - input.vis_sig();

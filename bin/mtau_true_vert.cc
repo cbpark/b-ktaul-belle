@@ -199,8 +199,8 @@ int main(int argc, char *argv[]) {
 
         auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
                                        {}, {v_ip}, {v_bs}, {v_bt});
-        // beams = LorentzVector(m_px, m_py, m_pz, m_e);
-        // input.set_sqrt_s(beams);
+        beams = LorentzVector(m_px, m_py, m_pz, m_e);
+        input.set_sqrt_s(beams);
 
 #ifdef DEBUG
         cout << "\nvis_sig: " << input.vis_sig() << '\n'

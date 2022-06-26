@@ -222,8 +222,8 @@ int main(int argc, char *argv[]) {
 
         auto input = analysis::mkInput(k_sig, mu_sig, htau_sig, d_tag, mu_tag,
                                        {}, {v_ip}, {v_bs}, {v_bt});
-        // beams = LorentzVector(m_px, m_py, m_pz, m_e);
-        // input.set_sqrt_s(beams);
+        beams = LorentzVector(m_px, m_py, m_pz, m_e);
+        input.set_sqrt_s(beams);
 
         if (id_tau_daughter == 11 || id_tau_daughter == 13) {
             m_invisible1 = analysis::mNuNu(input);
@@ -252,6 +252,9 @@ int main(int argc, char *argv[]) {
 
         // mtau using random cos(theta).
         mtau_random = analysis::mRecoilRandom(input, rnd);
+#ifdef DEBUG
+        cout << "mtau_random: " << mtau_random << "\n\n";
+#endif
 
         // the input for calculating M2 variables (no vertex info).
         auto input_kinematics =
