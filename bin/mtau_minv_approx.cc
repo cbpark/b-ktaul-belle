@@ -18,18 +18,18 @@ const double PZTOT = analysis::PLONG;
 
 const double SQRTS = 10.583;
 
-const double EPSILON = 1.0e-8;
+const double EPSILON = 1.0e-6;
 const unsigned int NEVAL = 2000;
 
 int main(int argc, char *argv[]) {
     if (!(argc == 5)) {
         std::cerr
-            << "usage: ./bin/mtau <event.root> <output.root> <tau_decay_mode> "
-               "<sigma_vz_ip>\n"
+            << "usage: ./bin/mtau <event.root> <output.root> <sigma_vz_ip> "
+               "<sigma_x_sig>\n"
             << "  <event.root>: input root file (required).\n"
             << "  <output.root>: output file to store the result (required).\n"
-            << "  <tau_decay_mode>: 0 (all) 1 (hadronic) 2 (leptonic)\n"
-            << "  <sigma_vz_ip>: sigma(IP{z})\n";
+            << "  <sigma_vz_ip>: sigma(IP{z}).\n"
+            << "  <sigma_x_sig>: sigma(x(sig)).\n";
         return 1;
     }
 
@@ -52,22 +52,13 @@ int main(int argc, char *argv[]) {
     auto event = infile.Get<TTree>(treename);
     // event->Print();
 
-    int tau_decay_mode = std::atoi(argv[3]);
-    if (tau_decay_mode == 0) {
-        cout << "-- Use all the decay modes of tau.\n";
-    } else if (tau_decay_mode == 1) {
-        cout << "-- Use hadronic decay modes of tau.\n";
-    } else if (tau_decay_mode == 2) {
-        cout << "-- Use leptonic decay modes of tau.\n";
-    } else {
-        std::cerr
-            << "-- The tau decay mode must be set to be either 0, 1, or 2.\n";
-        return 1;
-    }
-
     // sigma(IP_{z})
-    double sigma_vz_ip = std::atof(argv[4]);
+    double sigma_vz_ip = std::atof(argv[3]);
     cout << "-- sigma(IP_z): " << sigma_vz_ip << '\n';
+
+    // sigma(x(sig))
+    double sigma_x_sig = std::atof(argv[4]);
+    cout << "-- sigma(x(sig)): " << sigma_x_sig << '\n';
 
     // beam momentum.
     Float_t m_px, m_py, m_pz, m_e;
@@ -136,7 +127,7 @@ int main(int argc, char *argv[]) {
     Double_t m2v_eq, mtau_m2v_eq;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
-    output->Branch("i_htaus", &i_htaus, "i_htaus/I");
+    output->Branch("i_htaus", &i_htaus, "i_htaus/F");
     output->Branch("mtau_random", &mtau_random, "mtau_random/D");
     output->Branch("m2s", &m2s, "m2s/D");
     output->Branch("mtau_m2s", &mtau_m2s, "mtau_m2s/D");
@@ -161,11 +152,18 @@ int main(int argc, char *argv[]) {
 
     // the random number generator for IP(z).
     auto ip_smearing = std::make_shared<TRandom3>();
+#ifdef DEBUG
     ip_smearing->SetSeed(43);
+#endif
+
+    // the random number generator for x(sig).
+    auto vertex_smearing = std::make_shared<TRandom3>();
+#ifdef DEBUG
+    vertex_smearing->SetSeed(44);
+#endif
 
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
-    unsigned int n_tau_decay_mode = 0;
 
 #ifndef DEBUG
     // --------------------------------------------------------------------------
@@ -184,24 +182,6 @@ int main(int argc, char *argv[]) {
         event->GetEntry(iev);
         // event->Show(iev);
 
-        int id_tau_daughter = std::abs(i_htaus);
-        if (tau_decay_mode != 0) {
-            if (id_tau_daughter == 211 || id_tau_daughter == 213 ||
-                id_tau_daughter == 321) {
-                if (tau_decay_mode != 1) { continue; }
-            } else if (id_tau_daughter == 11 || id_tau_daughter == 13) {
-                if (tau_decay_mode != 2) { continue; }
-            } else {
-                cout << "-- unknown i_htaus at event " << iev + 1 << ": "
-                     << i_htaus << '\n';
-                continue;
-            }
-        }
-        ++n_tau_decay_mode;
-#ifdef DEBUG
-        cout << "-- id_tau_daughter: " << std::abs(i_htaus) << '\n';
-#endif
-
         k_sig = LorentzVector(px_ks, py_ks, pz_ks, e_ks);
         mu_sig = LorentzVector(px_mus, py_mus, pz_mus, e_mus);
         htau_sig = LorentzVector(px_htaus, py_htaus, pz_htaus, e_htaus);
@@ -217,6 +197,28 @@ int main(int argc, char *argv[]) {
 #endif
 
         v_ip = Vector3(vx_ip, vy_ip, vz_ip);
+
+#ifdef DEBUG
+        cout << "\nvx_bs (before smearing): " << vx_bs << '\n';
+#endif
+        vx_bs = vertex_smearing->Gaus(vx_bs, sigma_x_sig);
+#ifdef DEBUG
+        cout << "vx_bs (after smearing): " << vx_bs << '\n';
+#endif
+#ifdef DEBUG
+        cout << "\nvy_bs (before smearing): " << vy_bs << '\n';
+#endif
+        vy_bs = vertex_smearing->Gaus(vy_bs, sigma_x_sig);
+#ifdef DEBUG
+        cout << "vy_bs (after smearing): " << vy_bs << '\n';
+#endif
+#ifdef DEBUG
+        cout << "\nvz_bs (before smearing): " << vz_bs << '\n';
+#endif
+        vz_bs = vertex_smearing->Gaus(vz_bs, sigma_x_sig);
+#ifdef DEBUG
+        cout << "vz_bs (after smearing): " << vz_bs << '\n';
+#endif
         v_bs = Vector3(vx_bs, vy_bs, vz_bs);
         v_bt = Vector3(vx_bt, vy_bt, vz_bt);
 
@@ -225,6 +227,10 @@ int main(int argc, char *argv[]) {
         beams = LorentzVector(m_px, m_py, m_pz, m_e);
         input.set_sqrt_s(beams);
 
+        int id_tau_daughter = std::abs(i_htaus);
+#ifdef DEBUG
+        cout << "-- id_tau_daughter: " << std::abs(i_htaus) << '\n';
+#endif
         if (id_tau_daughter == 11 || id_tau_daughter == 13) {
             m_invisible1 = analysis::mNuNu(input);
 #ifdef DEBUG
@@ -346,6 +352,4 @@ int main(int argc, char *argv[]) {
     output->Write();
 
     outfile.Close();
-
-    cout << "-- " << n_tau_decay_mode << " events analyzed.\n";
 }

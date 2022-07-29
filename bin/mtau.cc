@@ -18,17 +18,15 @@ const double PZTOT = analysis::PLONG;
 
 const double SQRTS = 10.583;
 
-const double EPSILON = 1.0e-8;
+const double EPSILON = 1.0e-6;
 const unsigned int NEVAL = 2000;
 
 int main(int argc, char *argv[]) {
-    if (!(argc == 5)) {
+    if (!(argc == 4)) {
         std::cerr
-            << "usage: ./bin/mtau <event.root> <output.root> <tau_decay_mode> "
-               "<sigma_vz_ip>\n"
+            << "usage: ./bin/mtau <event.root> <output.root> <sigma_vz_ip>\n"
             << "  <event.root>: input root file (required).\n"
             << "  <output.root>: output file to store the result (required).\n"
-            << "  <tau_decay_mode>: 0 (all) 1 (hadronic) 2 (leptonic)\n"
             << "  <sigma_vz_ip>: sigma(IP{z})\n";
         return 1;
     }
@@ -52,21 +50,8 @@ int main(int argc, char *argv[]) {
     auto event = infile.Get<TTree>(treename);
     // event->Print();
 
-    int tau_decay_mode = std::atoi(argv[3]);
-    if (tau_decay_mode == 0) {
-        cout << "-- Use all the decay modes of tau.\n";
-    } else if (tau_decay_mode == 1) {
-        cout << "-- Use hadronic decay modes of tau.\n";
-    } else if (tau_decay_mode == 2) {
-        cout << "-- Use leptonic decay modes of tau.\n";
-    } else {
-        std::cerr
-            << "-- The tau decay mode must be set to be either 0, 1, or 2.\n";
-        return 1;
-    }
-
     // sigma(IP_{z})
-    double sigma_vz_ip = std::atof(argv[4]);
+    double sigma_vz_ip = std::atof(argv[3]);
     cout << "-- sigma(IP_z): " << sigma_vz_ip << '\n';
 
     // beam momentum.
@@ -89,6 +74,7 @@ int main(int argc, char *argv[]) {
 
     cout << "-- Use the reco-level data.\n";
     event->SetBranchAddress("m_px", &m_px);
+
     event->SetBranchAddress("m_py", &m_py);
     event->SetBranchAddress("m_pz", &m_pz);
     event->SetBranchAddress("m_e", &m_e);
@@ -136,7 +122,7 @@ int main(int argc, char *argv[]) {
     Double_t m2v_eq, mtau_m2v_eq;
 
     auto output = std::make_shared<TTree>("var", "collider variables");
-    output->Branch("i_htaus", &i_htaus, "i_htaus/I");
+    output->Branch("i_htaus", &i_htaus, "i_htaus/F");
     output->Branch("mtau_random", &mtau_random, "mtau_random/D");
     output->Branch("m2s", &m2s, "m2s/D");
     output->Branch("mtau_m2s", &mtau_m2s, "mtau_m2s/D");
@@ -163,7 +149,6 @@ int main(int argc, char *argv[]) {
 
     const auto nentries = event->GetEntries();
     cout << "-- Total number of events: " << nentries << '\n';
-    unsigned int n_tau_decay_mode = 0;
 
 #ifndef DEBUG
     // --------------------------------------------------------------------------
@@ -181,24 +166,6 @@ int main(int argc, char *argv[]) {
 
         event->GetEntry(iev);
         // event->Show(iev);
-
-        int id_tau_daughter = std::abs(i_htaus);
-        if (tau_decay_mode != 0) {
-            if (id_tau_daughter == 211 || id_tau_daughter == 213 ||
-                id_tau_daughter == 321) {
-                if (tau_decay_mode != 1) { continue; }
-            } else if (id_tau_daughter == 11 || id_tau_daughter == 13) {
-                if (tau_decay_mode != 2) { continue; }
-            } else {
-                cout << "-- unknown i_htaus at event " << iev + 1 << ": "
-                     << i_htaus << '\n';
-                continue;
-            }
-        }
-        ++n_tau_decay_mode;
-#ifdef DEBUG
-        cout << "-- id_tau_daughter: " << std::abs(i_htaus) << '\n';
-#endif
 
         k_sig = LorentzVector(px_ks, py_ks, pz_ks, e_ks);
         mu_sig = LorentzVector(px_mus, py_mus, pz_mus, e_mus);
@@ -333,6 +300,4 @@ int main(int argc, char *argv[]) {
     output->Write();
 
     outfile.Close();
-
-    cout << "-- " << n_tau_decay_mode << " events analyzed.\n";
 }
